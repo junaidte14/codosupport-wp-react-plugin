@@ -8,6 +8,8 @@ export const ticketActions = {
     addItem,
     updateItem,
     deleteItem,
+    uploadFiles,
+    removeFile
 };
 
 function getAll() {
@@ -79,6 +81,64 @@ function addItem(item) {
                 error => {
                     dispatch({ 
                         type: actionTypes.TICKETS.ADD_FAILURE, 
+                        error 
+                    });
+                    dispatch(alertActions.error(error));
+                    reject();
+                }
+            );
+        });
+    };
+}
+
+function uploadFiles(files) {
+    return dispatch => {
+        return new Promise((resolve, reject) => {
+            dispatch({ 
+                type: actionTypes.TICKETS.UPLOAD_REQUEST 
+            });
+
+            ticketService.uploadFiles(files)
+            .then(
+                res => {
+                    dispatch({ 
+                        type: actionTypes.TICKETS.UPLOAD_SUCCESS,
+                    });
+                    dispatch(alertActions.success('Files are successfully uploaded!'));
+                    resolve(res);
+                },
+                error => {
+                    dispatch({ 
+                        type: actionTypes.TICKETS.UPLOAD_FAILURE, 
+                        error 
+                    });
+                    dispatch(alertActions.error(error));
+                    reject();
+                }
+            );
+        });
+    };
+}
+
+function removeFile(attach_id) {
+    return dispatch => {
+        return new Promise((resolve, reject) => {
+            dispatch({ 
+                type: actionTypes.TICKETS.REMOVE_REQUEST 
+            });
+
+            ticketService.removeFile(attach_id)
+            .then(
+                res => {
+                    dispatch({ 
+                        type: actionTypes.TICKETS.REMOVE_SUCCESS,
+                    });
+                    dispatch(alertActions.success('File is successfully deleted!'));
+                    resolve(res);
+                },
+                error => {
+                    dispatch({ 
+                        type: actionTypes.TICKETS.REMOVE_FAILURE, 
                         error 
                     });
                     dispatch(alertActions.error(error));

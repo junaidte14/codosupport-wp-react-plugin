@@ -195,6 +195,7 @@ class Codosupport_Admin {
 	}
 
 	public function codosupport_add_new_ticket() {
+		// check the nonce
 		if ( !wp_verify_nonce( $_REQUEST['nonce'], "codosupport_tickets_nonce")) {
 			exit("No naughty business please");
 		} 
@@ -202,6 +203,8 @@ class Codosupport_Admin {
 		$ticket_title = isset($_REQUEST['title']) ? $_REQUEST['title']: "";
 		$ticket_product = isset($_REQUEST['product']) ? $_REQUEST['product']: "";
 		$ticket_description = isset($_REQUEST['description']) ? $_REQUEST['description']: "";
+		$ticket_attachments = isset($_REQUEST['attachments']) ? $_REQUEST['attachments']: [];
+		$ticket_user_id = isset($_REQUEST['user_id']) ? $_REQUEST['user_id']: null;
 		$ticket_date = date();
 		// insert the submitted ticket
 		$post_id = wp_insert_post(array (
@@ -217,14 +220,164 @@ class Codosupport_Admin {
 			// insert post meta
 			$data_array = array();
 			$data_array['codosupport_ticket_product'] = $ticket_product;
+			$data_array['codosupport_ticket_user'] = $ticket_user_id;
+			$data_array['codosupport_ticket_attachments'] = $ticket_attachments;
 			update_post_meta($post_id, 'codosupport_tickets_options', $data_array);
-			//wp_set_object_terms( $post_id, intval( $ticket_category), 'ticket_categories' );
+			foreach ($ticket_attachments as $attachment) {
+				if( 'attachment' === get_post_type( $attachment['attach_id'] ) ) {
+					$media_post = wp_update_post( array(
+						'ID'            => $attachment['attach_id'],
+						'post_parent'   => $post_id,
+					), true );
+				}				
+			}
 			$result['type'] = "success";
 		}else{
 			$result['type'] = "failure";
 		}
 
 		$result['data'] = $post_id;
+
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+			$result = json_encode($result);
+			echo $result;
+		}
+		else {
+			header("Location: ".$_SERVER["HTTP_REFERER"]);
+		}
+		die();
+	}
+
+	public function codosupport_upload_files() {
+		// check the nonce
+		if ( !wp_verify_nonce( $_REQUEST['nonce'], "codosupport_tickets_nonce")) {
+			exit("No naughty business please");
+		} 
+		
+		$result = [];
+		if(isset($_FILES['files'])){
+			$valid_formats = array("jpg", "png", "gif", "bmp", "jpeg"); // Supported file types
+			$max_file_size = 1024 * 500; // in kb
+			$max_image_upload = 5; // Define how many images can be uploaded to the current post
+			$wp_upload_dir = wp_upload_dir();
+			$path = $wp_upload_dir['path'] . '/';
+			$count = 0;
+
+			// Image upload handler
+			if( $_SERVER['REQUEST_METHOD'] == "POST" ){
+				$uploaded_file_urls = [];
+				// Check if user is trying to upload more than the allowed number of images for the current post
+				if( ( count( $_FILES['files']['name'] ) ) > $max_image_upload ) {
+					$upload_message[] = "Sorry you can only upload " . $max_image_upload . " images for each ticket";
+				} else {
+					foreach ( $_FILES['files']['name'] as $f => $name ) {
+						$extension = pathinfo( $name, PATHINFO_EXTENSION );
+					
+						//$new_filename = $this->codosupport_generate_random_code( 20 )  . '.' . $extension;
+
+						if ( $_FILES['files']['error'][$f] == 4 ) {
+							continue;
+						}
+					
+						if ( $_FILES['files']['error'][$f] == 0 ) {
+							// Check if image size is larger than the allowed file size
+							if ( $_FILES['files']['size'][$f] > $max_file_size ) {
+								$upload_message[] = "$name is too large!.";
+								continue;
+						
+							// Check if the file being uploaded is in the allowed file types
+							} elseif( ! in_array( strtolower( $extension ), $valid_formats ) ){
+								$upload_message[] = "$name is not a valid format";
+								continue;
+						
+							} else{
+								$unique_name = wp_unique_filename($path, $name);
+								// If no errors, upload the file...
+								if( move_uploaded_file( $_FILES["files"]["tmp_name"][$f], $path.$unique_name ) ) {
+									$count++;
+									$filename = $path.$unique_name;
+									$filetype = wp_check_filetype( basename( $filename ), null );
+									$wp_upload_dir = wp_upload_dir();
+									$attachment = array(
+										'guid'           => $wp_upload_dir['url'] . '/' . basename( $filename ),
+										'post_mime_type' => $filetype['type'],
+										'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $filename ) ),
+										'post_content'   => '',
+										'post_status'    => 'inherit'
+									);
+									// Insert attachment to the database
+									$attach_id = wp_insert_attachment( $attachment, $filename );
+
+									$file_obj = array(
+										'name' => $name, 
+										'url' => $wp_upload_dir['url'] . '/' . basename( $filename ),
+										'attach_id' => $attach_id
+									);
+									$uploaded_file_urls[] = $file_obj;
+
+									require_once( ABSPATH . 'wp-admin/includes/image.php' );
+								
+									// Generate meta data
+									$attach_data = wp_generate_attachment_metadata( $attach_id, $filename );
+									wp_update_attachment_metadata( $attach_id, $attach_data );
+								
+								}
+							}
+						}
+					}
+				}
+			}
+			// Loop through each error then output it to the screen
+			if ( isset( $upload_message ) ) :
+				foreach ( $upload_message as $msg ){     
+					$result['errors'][] = $msg;  
+				}
+			endif;
+
+			$result['data'] = $uploaded_file_urls;
+		
+		}
+
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+			$result = json_encode($result);
+			echo $result;
+		}
+		else {
+			header("Location: ".$_SERVER["HTTP_REFERER"]);
+		}
+		die();
+	}
+
+	function codosupport_generate_random_code($length=10) {
+ 
+		$string = '';
+		$characters = "23456789ABCDEFHJKLMNPRTVWXYZabcdefghijklmnopqrstuvwxyz";
+	  
+		for ($p = 0; $p < $length; $p++) {
+			$string .= $characters[mt_rand(0, strlen($characters)-1)];
+		}
+	  
+		return $string;
+	  
+	}
+
+	public function codosupport_remove_ticket_file() {
+		// check the nonce
+		if ( !wp_verify_nonce( $_REQUEST['nonce'], "codosupport_tickets_nonce")) {
+			exit("No naughty business please");
+		} 
+		
+		$result = [];
+		$attach_id = isset($_REQUEST['attach_id']) ? $_REQUEST['attach_id']: null;
+
+		if ($attach_id) {
+			wp_delete_attachment( $attach_id, true );
+			$result['type'] = "success";
+		}else{
+			$result['type'] = "failure";
+		}
+
+		$result['data'] = $attach_id;
 
 		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
 			$result = json_encode($result);

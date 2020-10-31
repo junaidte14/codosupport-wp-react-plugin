@@ -27,6 +27,14 @@ if(!function_exists('codosupport_get_taxonomy_hierarchy')){
     }
 }
 
+if(!function_exists('codosupport_get_current_page_url')){
+    function codosupport_get_current_page_url() {
+        global $wp;
+        $current_page_url = add_query_arg( $wp->query_vars, home_url( $wp->request ) );
+        return $current_page_url;
+    }
+}
+
 function codosupport_shortcode($atts) {
     $nonce = wp_create_nonce("codosupport_tickets_nonce");
     wp_enqueue_script( 
@@ -39,18 +47,30 @@ function codosupport_shortcode($atts) {
         CODOSUPPORT_VERSION, 
         true 
     );
-    $ticket_categories = codosupport_get_taxonomy_hierarchy('ticket_categories');
+    //$ticket_categories = codosupport_get_taxonomy_hierarchy('ticket_categories');
     $codosupport_products = get_posts(
         array(
             'numberposts' => -1,
             'post_type' => 'codosupport_products'
         )
     );
+
+    if(is_user_logged_in()){
+        $user_id = get_current_user_id();
+    }else{
+        $user_id = null;
+    }
+
+    $current_page_url = codosupport_get_current_page_url();
+    $login_url = wp_login_url($current_page_url);
+
     wp_localize_script( 'codosupport-react-app', 'codosupport_data', array( 
         'ajaxurl' => admin_url( 'admin-ajax.php' ),
         'nonce' => $nonce,
-        'categories' => $ticket_categories,
-        'products' => $codosupport_products
+        //'categories' => $ticket_categories,
+        'products' => $codosupport_products,
+        'user_id'  => $user_id,
+        'login_url' => $login_url
     ));
     ob_start();
 	?>

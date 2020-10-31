@@ -10,6 +10,7 @@ const AddForm = () =>{
     const [title, setTitle] = useState('');
     const [product, setProduct] = useState('');
     const [description, setDescription] = useState('');
+    const [attachments, setAttachments] = useState([]);
     const [submitted, setSubmitted] = useState(false);
 
     const handleChange = (e) =>{
@@ -32,13 +33,54 @@ const AddForm = () =>{
         }
     }
 
+    const uploadFiles = (e) => {
+        e.preventDefault;
+        let files_data = jQuery('#codosupport-files').prop('files');
+        let imgForm = jQuery('#codosupport-img-form')[0];
+        let formData = new FormData(imgForm);
+        for(let i=0; i<files_data.length; i++) {
+            formData.append('files[]', files_data[i]);
+        }
+        formData.append('action', 'codosupport_upload_files');
+        formData.append('nonce', codosupport_data.nonce);
+
+        dispatch(ticketActions.uploadFiles(formData)).then(res => {
+            jQuery('#codosupport-files').val('');
+            if(res.data && res.data.length){
+                setAttachments(res.data);
+            }
+        });
+    }
+
+    const removeFile = (attach_id) => {
+        /*  */
+
+        let newAttachments = new Array();
+        attachments.forEach((element) => {
+            if(element['attach_id'] !== attach_id){
+                newAttachments.push(element);
+            }else{
+                let formData = new FormData();
+                formData.append('action', 'codosupport_remove_ticket_file');
+                formData.append('nonce', codosupport_data.nonce);
+                formData.append('attach_id', attach_id);
+                dispatch(ticketActions.removeFile(formData)).then(res => {
+                    if(res && res.type && res.type == 'success'){
+                        setAttachments(newAttachments);
+                    }
+                });
+            }
+        });
+    }
+
     const submitForm = (e) =>{
         e.preventDefault();
         setSubmitted(true);
         let tempItem = {
             title: title,
             product: product,
-            description: description
+            description: description,
+            attachments: attachments
         }
         if (tempItem.title && tempItem.description) {
             dispatch(ticketActions.addItem(tempItem)).then(res => {
@@ -47,6 +89,7 @@ const AddForm = () =>{
                     setTitle('');
                     setDescription('');
                     setProduct('');
+                    setAttachments([]);
                 }
             });
         }else{
@@ -88,7 +131,34 @@ const AddForm = () =>{
                 </div>
 
                 <div className="mb-2">
-                    <button className="btn btn-primary ml-auto rounded-0" onClick={submitForm}>Save</button>
+                    <form method="POST" encType="multipart/form-data" id="codosupport-img-form">
+                        <div className="upload-response"></div>
+                        <div className="mb-2">
+                            <label className="mr-2">Select Files:</label>
+                            <input type="file" id="codosupport-files" className="codosupport-files" accept="image/*" multiple 
+                            onChange={uploadFiles}/>
+                        </div>
+                    </form>
+                    <div className="mb-2" id="codosupport-uploaded-files">
+                        {attachments.length ?
+                            (
+                                attachments.map(item => {
+                                    return (
+                                        <div id={'codosupport-file-id-'+item['attach_id']} key={item['attach_id']}>
+                                            <a href={item['url']} target="_blank">{item['name']}</a>
+                                            <span className="ml-2">
+                                                <a onClick={() => removeFile(item['attach_id'])} style={{color: 'red', cursor: 'pointer'}}>&#10006;</a>
+                                            </span>
+                                        </div>
+                                    );
+                                })
+                            ): ''
+                        }
+                    </div>
+                </div>
+
+                <div className="mb-2">
+                    <button className="btn btn-primary ml-auto rounded-0" disabled={loading} onClick={submitForm}>Save</button>
                     {loading &&
                         <Spinner showBlock={false}/>
                     }

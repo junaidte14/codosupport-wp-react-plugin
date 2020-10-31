@@ -62,6 +62,40 @@ export function tickets(state = initialState, action) {
         actionLoader: false
       }
 
+    case actionTypes.TICKETS.UPLOAD_REQUEST:
+      return {
+        ...state,
+        actionLoader: true
+      }
+    case actionTypes.TICKETS.UPLOAD_SUCCESS:
+      return {
+        ...state,
+        actionLoader: false
+      }
+    case actionTypes.TICKETS.UPLOAD_FAILURE:
+      return {
+        ...state,
+        error: action.error,
+        actionLoader: false
+      }
+
+    case actionTypes.TICKETS.REMOVE_REQUEST:
+      return {
+        ...state,
+        actionLoader: true
+      }
+    case actionTypes.TICKETS.REMOVE_SUCCESS:
+      return {
+        ...state,
+        actionLoader: false
+      }
+    case actionTypes.TICKETS.REMOVE_FAILURE:
+      return {
+        ...state,
+        error: action.error,
+        actionLoader: false
+      }
+
     case actionTypes.TICKETS.UPDATE_REQUEST:
       return {
         ...state,

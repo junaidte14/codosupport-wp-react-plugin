@@ -3,7 +3,9 @@ export const ticketService = {
     getItemById,
     addItem,
     updateItem,
-    deleteItem
+    deleteItem,
+    uploadFiles,
+    removeFile
 };
 
 function getAll() {
@@ -28,6 +30,7 @@ function getItemById(id) {
 }
 
 function addItem(item) {
+    console.log(item.attachments);
     return jQuery.ajax({
         type : "post",
         dataType : "json",
@@ -37,8 +40,32 @@ function addItem(item) {
             nonce: codosupport_data.nonce,
             title: item.title,
             product: item.product,
-            description: item.description
+            description: item.description,
+            attachments: item.attachments,
+            user_id: codosupport_data.user_id
         }
+    });
+}
+
+function uploadFiles(files) {
+    return jQuery.ajax({
+        type : "POST",
+        processData: false,
+        contentType: false,
+        dataType: "JSON",
+        url : codosupport_data.ajaxurl,
+        data : files
+    });
+}
+
+function removeFile(formData) {
+    return jQuery.ajax({
+        type : "POST",
+        dataType: "JSON",
+        processData: false,
+        contentType: false,
+        url : codosupport_data.ajaxurl,
+        data : formData
     });
 }
 

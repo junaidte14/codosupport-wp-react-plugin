@@ -16,7 +16,12 @@ const App = () =>{
       {alert.message &&
         <div className={`alert ${alert.type}`}>{alert.message}</div>
       }
-      <AddForm />
+      {codosupport_data.user_id &&
+        <AddForm />
+      }
+      {!codosupport_data.user_id &&
+        <div className={`alert aler-error`}>Please login to submit a support ticket! <a href={codosupport_data.login_url}>Login</a></div>
+      }
     </div>
   );
 

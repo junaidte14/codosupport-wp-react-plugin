@@ -181,6 +181,12 @@ class Codosupport {
 		//ticket ajax hooks to add new ticket
 		$this->loader->add_action("wp_ajax_codosupport_add_new_ticket", $plugin_admin, "codosupport_add_new_ticket");
 		$this->loader->add_action("wp_ajax_nopriv_codosupport_add_new_ticket", $plugin_admin, "codosupport_add_new_ticket");
+		//ticket ajax hooks to upload files
+		$this->loader->add_action("wp_ajax_codosupport_upload_files", $plugin_admin, "codosupport_upload_files");
+		$this->loader->add_action("wp_ajax_nopriv_codosupport_upload_files", $plugin_admin, "codosupport_upload_files");
+		//ticket ajax hooks to remove file
+		$this->loader->add_action("wp_ajax_codosupport_remove_ticket_file", $plugin_admin, "codosupport_remove_ticket_file");
+		$this->loader->add_action("wp_ajax_nopriv_codosupport_remove_ticket_file", $plugin_admin, "codosupport_remove_ticket_file");
 
 
 		//Register products post type 

@@ -1,0 +1,21 @@
+export const actionTypes = {
+    ALERT: {
+        SUCCESS: 'ALERT_SUCCESS',
+        ERROR: 'ALERT_ERROR',
+        CLEAR: 'ALERT_CLEAR',
+    },
+    TICKETS: {
+        GETALL_REQUEST: 'GETALL_REQUEST',
+        GETALL_SUCCESS: 'GETALL_SUCCESS',
+        GETALL_FAILURE: 'GETALL_FAILURE',
+
+        ADD_REQUEST: 'ADD_REQUEST',
+        ADD_SUCCESS: 'ADD_SUCCESS',
+        ADD_FAILURE: 'ADD_FAILURE'
+    },
+    PRODUCTS: {
+        GETALL_REQUEST: 'GETALL_REQUEST',
+        GETALL_SUCCESS: 'GETALL_SUCCESS',
+        GETALL_FAILURE: 'GETALL_FAILURE'
+    }
+};

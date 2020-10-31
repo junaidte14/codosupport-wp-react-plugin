@@ -76,12 +76,13 @@ class Codosupport_Admin {
 		add_menu_page( $this->plugin_name, $this->plugin_name, 'manage_options', $this->plugin_name, array($this, 'codosupport_dashboard_page'), 'dashicons-analytics', null );
 		add_submenu_page( $this->plugin_name, 'Products', 'Products', 'manage_options', 'edit.php?post_type=codosupport_products', '', null );
 		add_submenu_page( $this->plugin_name, 'Tickets', 'Tickets', 'manage_options', 'edit.php?post_type=codosupport_tickets', '', null );
+		//add_submenu_page( $this->plugin_name, 'Ticket Categories', 'Categories', 'manage_options', 'edit-tags.php?taxonomy=ticket_categories&post_type=codosupport_tickets', '', null );
 	}
 
 	public function codosupport_parent_file(){
 		/* Get current screen */
 		global $current_screen, $self;
-		if ( in_array( $current_screen->base, array( 'post', 'edit' ) ) && 
+		if ( in_array( $current_screen->base, array( 'post', 'edit', 'edit-tags' ) ) && 
 			(
 				'codosupport_tickets' == $current_screen->post_type ||
 				'codosupport_products' == $current_screen->post_type
@@ -131,6 +132,7 @@ class Codosupport_Admin {
 
 	public function codosupport_tickets_columns($columns){
 		unset($columns['date']);
+		$columns['codosupport_ticket_product'] = __('Product', $this->plugin_name);
 		$columns['codosupport_ticket_respondent'] = __('Respondent', $this->plugin_name);
 		$columns['date'] = __('Date', $this->plugin_name);
 		return $columns;
@@ -139,11 +141,99 @@ class Codosupport_Admin {
 	public function codosupport_tickets_populate_columns($column){
 		$codosupport_tickets_options = get_post_meta( get_the_ID(), 'codosupport_tickets_options', true );
 		if ( 'codosupport_ticket_respondent' == $column ) {
+			$respondent = '';
 			if(is_array($codosupport_tickets_options)){
-				$codosupport_ticket_respondent = ($codosupport_tickets_options['codosupport_ticket_respondent']) ? $codosupport_tickets_options['codosupport_ticket_respondent'] : '';
+				$codosupport_ticket_product = isset($codosupport_tickets_options['codosupport_ticket_product']) ? $codosupport_tickets_options['codosupport_ticket_product'] : '';
+				if($codosupport_ticket_product != ''){
+					$codosupport_products_options = get_post_meta( intval($codosupport_ticket_product), 'codosupport_products_options', true );
+					if(is_array($codosupport_products_options)){
+						$codosupport_product_respondent = isset($codosupport_products_options['codosupport_product_respondent']) ? intval( $codosupport_products_options['codosupport_product_respondent'] ) : '';
+						if($codosupport_product_respondent != ''){
+							$user = get_user_by('ID', $codosupport_product_respondent);
+							if($user){
+								$respondent = $user->display_name;
+							}
+						}
+					}
+				}
 			}
-			echo $codosupport_ticket_respondent;
+			echo $respondent;
 		}
+		if ( 'codosupport_ticket_product' == $column ) {
+			if(is_array($codosupport_tickets_options)){
+				$codosupport_ticket_product = isset($codosupport_tickets_options['codosupport_ticket_product']) ? $codosupport_tickets_options['codosupport_ticket_product'] : '';
+			}
+			echo ($codosupport_ticket_product != '') ? get_the_title(intval($codosupport_ticket_product)): '';
+		}
+	}
+
+	public function codosupport_ticket_categories() {
+		$labels = array(
+			'name'              => _x( 'Categories', 'Categories', CODOSUPPORT_NAME ),
+			'singular_name'     => _x( 'Category', 'Category', CODOSUPPORT_NAME ),
+			'search_items'      => __( 'Search Categories', CODOSUPPORT_NAME ),
+			'all_items'         => __( 'All Categories', CODOSUPPORT_NAME ),
+			'parent_item'       => __( 'Parent Category', CODOSUPPORT_NAME ),
+			'parent_item_colon' => __( 'Parent Category:', CODOSUPPORT_NAME ),
+			'edit_item'         => __( 'Edit Category', CODOSUPPORT_NAME ),
+			'update_item'       => __( 'Update Category', CODOSUPPORT_NAME ),
+			'add_new_item'      => __( 'Add New Category', CODOSUPPORT_NAME ),
+			'new_item_name'     => __( 'New Category Name', CODOSUPPORT_NAME ),
+			'menu_name'         => __( 'Category', CODOSUPPORT_NAME ),
+		);
+	 
+		$args = array(
+			'hierarchical'      => true,
+			'labels'            => $labels,
+			'show_ui'           => true,
+			'show_admin_column' => true,
+			'query_var'         => true,
+			'rewrite'           => array( 'slug' => 'ticket_categories' ),
+		);
+	 
+		register_taxonomy( 'ticket_categories', array( 'codosupport_tickets' ), $args );
+	}
+
+	public function codosupport_add_new_ticket() {
+		if ( !wp_verify_nonce( $_REQUEST['nonce'], "codosupport_tickets_nonce")) {
+			exit("No naughty business please");
+		} 
+		
+		$ticket_title = isset($_REQUEST['title']) ? $_REQUEST['title']: "";
+		$ticket_product = isset($_REQUEST['product']) ? $_REQUEST['product']: "";
+		$ticket_description = isset($_REQUEST['description']) ? $_REQUEST['description']: "";
+		$ticket_date = date();
+		// insert the submitted ticket
+		$post_id = wp_insert_post(array (
+			'post_type' => 'codosupport_tickets',
+			'post_title' => $ticket_title,
+			'post_content' => $ticket_description,
+			'post_status' => 'publish',
+			'post_date'   => $ticket_date,
+			'ping_status' => 'closed',      // if you prefer
+		));
+
+		if ($post_id) {
+			// insert post meta
+			$data_array = array();
+			$data_array['codosupport_ticket_product'] = $ticket_product;
+			update_post_meta($post_id, 'codosupport_tickets_options', $data_array);
+			//wp_set_object_terms( $post_id, intval( $ticket_category), 'ticket_categories' );
+			$result['type'] = "success";
+		}else{
+			$result['type'] = "failure";
+		}
+
+		$result['data'] = $post_id;
+
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+			$result = json_encode($result);
+			echo $result;
+		}
+		else {
+			header("Location: ".$_SERVER["HTTP_REFERER"]);
+		}
+		die();
 	}
 
 	//helper functions for products post type
@@ -182,6 +272,7 @@ class Codosupport_Admin {
 	public function codosupport_products_columns($columns){
 		unset($columns['date']);
 		$columns['codosupport_product_price'] = __('Price', $this->plugin_name);
+		$columns['codosupport_product_respondent'] = __('Respondent', $this->plugin_name);
 		$columns['date'] = __('Date', $this->plugin_name);
 		return $columns;
 	}
@@ -190,10 +281,22 @@ class Codosupport_Admin {
 		$codosupport_products_options = get_post_meta( get_the_ID(), 'codosupport_products_options', true );
 		if ( 'codosupport_product_price' == $column ) {
 			if(is_array($codosupport_products_options)){
-				$codosupport_product_price = ($codosupport_products_options['codosupport_product_price']) ? $codosupport_products_options['codosupport_product_price'] : '';
+				$codosupport_product_price = isset($codosupport_products_options['codosupport_product_price']) ? $codosupport_products_options['codosupport_product_price'] : '';
 			}
 			echo $codosupport_product_price;
 		}
+
+		if ( 'codosupport_product_respondent' == $column ) {
+			$codosupport_product_respondent = isset($codosupport_products_options['codosupport_product_respondent']) ? intval( $codosupport_products_options['codosupport_product_respondent'] ) : '';
+			if($codosupport_product_respondent != ''){
+				$user = get_user_by('ID', $codosupport_product_respondent);
+				if($user){
+					$codosupport_product_respondent = $user->display_name;
+				}
+			}
+			echo $codosupport_product_respondent;
+		}
+
 	}
 
 }

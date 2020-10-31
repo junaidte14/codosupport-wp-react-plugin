@@ -21,7 +21,7 @@ register_post_type( 'codosupport_tickets', array(
     'query_var' => false,
     'exclude_from_search' => true,
     'supports' => array( 'title', 'editor' ),
-    'taxonomies' => array( '' ),
+    'taxonomies' => array( 'ticket_categories' ),
     'has_archive' => false,
     'show_in_menu' => false
 ));

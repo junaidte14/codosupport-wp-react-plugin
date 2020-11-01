@@ -4,6 +4,7 @@ const initialState = {
   loading: true,
   actionLoader: false,
   items: [],
+  item: [],
   error: null
 };
 export function tickets(state = initialState, action) {
@@ -34,7 +35,7 @@ export function tickets(state = initialState, action) {
     case actionTypes.TICKETS.GETBYID_SUCCESS:
       return {
         ...state,
-        item: action.tickets.data,
+        item: action.ticket.data,
         loading: false
       }
     case actionTypes.TICKETS.GETBYID_FAILURE:

@@ -44,9 +44,9 @@ function getItemById(id) {
                 ticket => {
                     dispatch({ 
                         type: actionTypes.TICKETS.GETBYID_SUCCESS, 
-                        ticket 
+                        ticket: ticket
                     });
-                    resolve(ticket);
+                    resolve(ticket.data);
                 },
                 error => {
                     dispatch({ 

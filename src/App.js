@@ -4,6 +4,7 @@ import { history } from './helper_functions';
 import './App.css';
 import AddForm from './components/tickets/add';
 import List from './components/tickets/list';
+import Single from './components/tickets/single';
 const App = () =>{
 
   const alert = useSelector(state => state.alert);
@@ -11,6 +12,8 @@ const App = () =>{
   history.listen((location, action) => {
       dispatch(alertActions.clear());
   });
+
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const openCity = (item) => {
     let tabcontent = jQuery('.codosupport-tabcontent');
@@ -49,7 +52,12 @@ const App = () =>{
         </div>
 
         <div id="codo-tab-content-2" className="codosupport-tabcontent">
-          <List />
+          {!selectedItem &&
+            <List setSelectedItem={setSelectedItem}/>
+          }
+          {selectedItem &&
+            <Single selectedItem={selectedItem} setSelectedItem={setSelectedItem}/>
+          }
         </div>
       </div>
     </div>

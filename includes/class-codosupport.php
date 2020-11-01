@@ -190,6 +190,9 @@ class Codosupport {
 		//ticket ajax hooks to get all tickets
 		$this->loader->add_action("wp_ajax_codosupport_get_tickets", $plugin_admin, "codosupport_get_tickets");
 		$this->loader->add_action("wp_ajax_nopriv_codosupport_get_tickets", $plugin_admin, "codosupport_get_tickets");
+		//ticket ajax hooks to get single ticket by id
+		$this->loader->add_action("wp_ajax_codosupport_get_ticket_by_id", $plugin_admin, "codosupport_get_ticket_by_id");
+		$this->loader->add_action("wp_ajax_nopriv_codosupport_get_ticket_by_id", $plugin_admin, "codosupport_get_ticket_by_id");
 
 
 		//Register products post type 

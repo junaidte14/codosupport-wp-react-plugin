@@ -3,7 +3,8 @@ import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import { ticketActions } from '../../store/actions';
 import Spinner from '../spinner';
 
-const List = () =>{
+const List = (props) =>{
+    const {setSelectedItem} = props;
     const dispatch = useDispatch();
     const ticketsState = useSelector(state => state.tickets, shallowEqual);
 
@@ -24,7 +25,11 @@ const List = () =>{
                         myTickets.map(item => {
                             return (
                                 <div key={item.ID} className="list-item">
-                                    <h2 className="item-title">{item[ 'post_title' ]}</h2>
+                                    <h2 className="item-title">
+                                        <a style={{cursor: 'pointer'}} onClick={() => setSelectedItem(item.ID)}>
+                                            {item[ 'post_title' ]}
+                                        </a>
+                                    </h2>
                                     <p className="item-description">{item['post_content']}</p>
                                     <p className="item-date">{item['post_date']}</p>
                                 </div>

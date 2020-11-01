@@ -22,12 +22,16 @@ function getAll(user_id) {
 }
 
 function getItemById(id) {
-    const requestOptions = {
-        method: 'GET',
-        headers: authHeader()
-    };
-
-    return fetch(`${vars.apiURL}todolists/${id}`, requestOptions).then(handleResponse);
+    return jQuery.ajax({
+        type : "post",
+        dataType : "json",
+        url : codosupport_data.ajaxurl,
+        data : {
+            action: "codosupport_get_ticket_by_id", 
+            nonce: codosupport_data.nonce,
+            ticket_id: id
+        }
+    });
 }
 
 function addItem(item) {

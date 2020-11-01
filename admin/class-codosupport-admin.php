@@ -379,6 +379,33 @@ class Codosupport_Admin {
 		die();
 	}
 
+	public function codosupport_get_ticket_by_id() {
+		// check the nonce
+		if ( !wp_verify_nonce( $_REQUEST['nonce'], "codosupport_tickets_nonce")) {
+			exit("No naughty business please");
+		} 
+		
+		$result = [];
+		$ticket_id = isset($_REQUEST['ticket_id']) ? intval($_REQUEST['ticket_id']): null;
+
+		if ($ticket_id) {
+			$ticket = get_post($ticket_id, 'ARRAY_A');
+			$result['data'] = $ticket;
+			$result['type'] = "success";
+		}else{
+			$result['type'] = "failure";
+		}
+
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+			$result = json_encode($result);
+			echo $result;
+		}
+		else {
+			header("Location: ".$_SERVER["HTTP_REFERER"]);
+		}
+		die();
+	}
+
 	public function codosupport_get_tickets() {
 		// check the nonce
 		if ( !wp_verify_nonce( $_REQUEST['nonce'], "codosupport_tickets_nonce")) {

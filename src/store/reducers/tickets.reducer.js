@@ -16,7 +16,7 @@ export function tickets(state = initialState, action) {
     case actionTypes.TICKETS.GETALL_SUCCESS:
       return {
         ...state,
-        items: action.tickets.tickets,
+        items: action.tickets.data,
         loading: false
       }
     case actionTypes.TICKETS.GETALL_FAILURE:

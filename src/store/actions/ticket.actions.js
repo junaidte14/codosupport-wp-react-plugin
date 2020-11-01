@@ -12,13 +12,13 @@ export const ticketActions = {
     removeFile
 };
 
-function getAll() {
+function getAll(user_id) {
     return dispatch => {
         dispatch({ 
             type: actionTypes.TICKETS.GETALL_REQUEST 
         });
 
-        ticketService.getAll()
+        ticketService.getAll(user_id)
         .then(
             tickets => dispatch({ 
                 type: actionTypes.TICKETS.GETALL_SUCCESS, 
@@ -70,10 +70,9 @@ function addItem(item) {
             ticketService.addItem(item)
             .then(
                 res => {
-                    item._id = res.data;
                     dispatch({ 
                         type: actionTypes.TICKETS.ADD_SUCCESS,
-                        newItem: item
+                        newItem: res.data
                     });
                     dispatch(alertActions.success('Item is successfully added!'));
                     resolve(res);

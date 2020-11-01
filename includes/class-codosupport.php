@@ -187,6 +187,9 @@ class Codosupport {
 		//ticket ajax hooks to remove file
 		$this->loader->add_action("wp_ajax_codosupport_remove_ticket_file", $plugin_admin, "codosupport_remove_ticket_file");
 		$this->loader->add_action("wp_ajax_nopriv_codosupport_remove_ticket_file", $plugin_admin, "codosupport_remove_ticket_file");
+		//ticket ajax hooks to get all tickets
+		$this->loader->add_action("wp_ajax_codosupport_get_tickets", $plugin_admin, "codosupport_get_tickets");
+		$this->loader->add_action("wp_ajax_nopriv_codosupport_get_tickets", $plugin_admin, "codosupport_get_tickets");
 
 
 		//Register products post type 

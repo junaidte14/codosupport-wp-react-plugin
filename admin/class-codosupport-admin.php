@@ -218,11 +218,9 @@ class Codosupport_Admin {
 
 		if ($post_id) {
 			// insert post meta
-			$data_array = array();
-			$data_array['codosupport_ticket_product'] = $ticket_product;
-			$data_array['codosupport_ticket_user'] = $ticket_user_id;
-			$data_array['codosupport_ticket_attachments'] = $ticket_attachments;
-			update_post_meta($post_id, 'codosupport_tickets_options', $data_array);
+			update_post_meta($post_id, 'codosupport_ticket_product', $ticket_product);
+			update_post_meta($post_id, 'codosupport_ticket_user', $ticket_user_id);
+			update_post_meta($post_id, 'codosupport_ticket_attachments', $ticket_attachments);
 			foreach ($ticket_attachments as $attachment) {
 				if( 'attachment' === get_post_type( $attachment['attach_id'] ) ) {
 					$media_post = wp_update_post( array(
@@ -236,7 +234,14 @@ class Codosupport_Admin {
 			$result['type'] = "failure";
 		}
 
-		$result['data'] = $post_id;
+		$newItem = array(
+			'ID' => $post_id,
+			'post_title' => $ticket_title,
+			'post_content' => $ticket_description,
+			'post_date' => $ticket_date
+		);
+
+		$result['data'] = $newItem;
 
 		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
 			$result = json_encode($result);
@@ -272,8 +277,6 @@ class Codosupport_Admin {
 				} else {
 					foreach ( $_FILES['files']['name'] as $f => $name ) {
 						$extension = pathinfo( $name, PATHINFO_EXTENSION );
-					
-						//$new_filename = $this->codosupport_generate_random_code( 20 )  . '.' . $extension;
 
 						if ( $_FILES['files']['error'][$f] == 4 ) {
 							continue;
@@ -348,19 +351,6 @@ class Codosupport_Admin {
 		die();
 	}
 
-	function codosupport_generate_random_code($length=10) {
- 
-		$string = '';
-		$characters = "23456789ABCDEFHJKLMNPRTVWXYZabcdefghijklmnopqrstuvwxyz";
-	  
-		for ($p = 0; $p < $length; $p++) {
-			$string .= $characters[mt_rand(0, strlen($characters)-1)];
-		}
-	  
-		return $string;
-	  
-	}
-
 	public function codosupport_remove_ticket_file() {
 		// check the nonce
 		if ( !wp_verify_nonce( $_REQUEST['nonce'], "codosupport_tickets_nonce")) {
@@ -378,6 +368,50 @@ class Codosupport_Admin {
 		}
 
 		$result['data'] = $attach_id;
+
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+			$result = json_encode($result);
+			echo $result;
+		}
+		else {
+			header("Location: ".$_SERVER["HTTP_REFERER"]);
+		}
+		die();
+	}
+
+	public function codosupport_get_tickets() {
+		// check the nonce
+		if ( !wp_verify_nonce( $_REQUEST['nonce'], "codosupport_tickets_nonce")) {
+			exit("No naughty business please");
+		} 
+		
+		$result = [];
+		$user_id = isset($_REQUEST['user_id']) ? intval($_REQUEST['user_id']): null;
+
+		if ($user_id) {
+			$paged = isset($_REQUEST['paged']) ? intval($_REQUEST['paged']): 0;
+			$postsPerPage = isset($_REQUEST['posts_per_page']) ? intval($_REQUEST['posts_per_page']): 5;
+			$postOffset = $paged * $postsPerPage;
+			$tickets = get_posts(
+				array(
+					'numberposts' => $postsPerPage,
+					'offset'          => $postOffset,
+					'post_type' => 'codosupport_tickets',
+					'meta_query' => array(
+						'key' => 'codosupport_ticket_user',
+						'value' => $user_id,
+						'compare' => '='
+					)
+				)
+			);
+
+			$result['data'] = $tickets;
+			$result['type'] = "success";
+		}else{
+			$result['type'] = "failure";
+		}
+
+		//$result['data'] = $attach_id;
 
 		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
 			$result = json_encode($result);

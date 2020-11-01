@@ -1,60 +1,62 @@
-.codoswp-w-250{
+.codo-w-250{
     min-width: 150px !important; 
     max-width: 150px !important;
 }
 
-.codowpcal p, .codowpcal select{
-    font-size: 14px;
+.codo-full-width{
+    width: 100%;
 }
 
-.codowpcal-bg-span{
-    font-size: 10px;
+.codo-form-field{
+    padding: 3px;
+    border: 1px solid #999 !important;
 }
 
-.codowpcal-cat-colors span:nth-child(1){
-    margin-right: 5px;
+.codo-error{
+    color: red;
 }
 
-.fc table{
-    margin: 0;
+/* Style the tab */
+.codosupport-tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
 }
 
-h2.fc-toolbar-title{
-    color: #3682FF !important;
+/* Style the buttons inside the tab */
+.codosupport-tab button {
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 17px;
+    opacity: 0.6;
 }
 
-.fc-button-group{
-    background-color: #00C693 !important;
-    padding: 2px 1px;
-    border-radius: 5px;
+/* Change background color of buttons on hover */
+.codosupport-tab button:hover {
+    opacity: 1;
 }
 
-.fc .fc-button{
-    padding: 0 5px !important;
-}
-.fc .fc-button-primary:not(:disabled).fc-button-active{
-    background-color: #00C693 !important;
-    border-color: #00C693 !important;
-    color: #ffffff !important;
-}
-.fc .fc-button-primary:not(:disabled):active:focus, .fc .fc-button-primary:not(:disabled).fc-button-active:focus,
-.fc .fc-button-primary:focus {
-    box-shadow: none !important;
-}
-.fc .fc-button-primary{
-    background-color: #ffffff !important;
-    border-color: #ffffff !important;
-    color: #000000 !important;
-    margin: 0 1px !important;
+/* Create an active/current tablink class */
+.codosupport-tab button.active {
+    opacity: 1;
 }
 
-span.fc-icon{
-    color: #00C693 !important;
+/* Style the tab content */
+.codosupport-tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
 }
 
-.fc-daygrid-more-link{
-    background-color: #00C693 !important;
-    color: #ffffff !important;
-    padding: 0 5px !important;
-    border-radius: 5px !important;
+.codo-form-field-wrapper{
+    margin-bottom: 10px;
+}
+
+.codosupport-tickets-list .list-item{
+    border-bottom: 1px solid #eeeeee;
 }

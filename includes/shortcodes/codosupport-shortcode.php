@@ -47,7 +47,6 @@ function codosupport_shortcode($atts) {
         CODOSUPPORT_VERSION, 
         true 
     );
-    //$ticket_categories = codosupport_get_taxonomy_hierarchy('ticket_categories');
     $codosupport_products = get_posts(
         array(
             'numberposts' => -1,
@@ -67,10 +66,10 @@ function codosupport_shortcode($atts) {
     wp_localize_script( 'codosupport-react-app', 'codosupport_data', array( 
         'ajaxurl' => admin_url( 'admin-ajax.php' ),
         'nonce' => $nonce,
-        //'categories' => $ticket_categories,
         'products' => $codosupport_products,
         'user_id'  => $user_id,
-        'login_url' => $login_url
+        'login_url' => $login_url,
+        'base_url' => $current_page_url
     ));
     ob_start();
 	?>

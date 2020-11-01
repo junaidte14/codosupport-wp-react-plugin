@@ -8,14 +8,15 @@ export const ticketService = {
     removeFile
 };
 
-function getAll() {
+function getAll(user_id) {
     return jQuery.ajax({
         type : "post",
         dataType : "json",
         url : codosupport_data.ajaxurl,
         data : {
-            action: "codosupport_get_tickets_data", 
-            nonce: codosupport_data.nonce
+            action: "codosupport_get_tickets", 
+            nonce: codosupport_data.nonce,
+            user_id: user_id
         }
     });
 }
@@ -30,7 +31,6 @@ function getItemById(id) {
 }
 
 function addItem(item) {
-    console.log(item.attachments);
     return jQuery.ajax({
         type : "post",
         dataType : "json",

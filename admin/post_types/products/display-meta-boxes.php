@@ -1,10 +1,7 @@
 <?php
 $users = get_users( array( 'fields' => array( 'ID', 'display_name' ) ) );
-$codosupport_products_options = get_post_meta( $codosupport_products->ID, 'codosupport_products_options', true );
-if(is_array($codosupport_products_options)){
-    $codosupport_product_price = isset($codosupport_products_options['codosupport_product_price']) ? esc_html( $codosupport_products_options['codosupport_product_price'] ) : 0;
-    $codosupport_product_respondent = isset($codosupport_products_options['codosupport_product_respondent']) ? esc_html( $codosupport_products_options['codosupport_product_respondent'] ) : '';
-}
+$codosupport_product_price = intval(get_post_meta( $codosupport_products->ID, 'codosupport_product_price', true ));
+$codosupport_product_respondent = intval(get_post_meta( $codosupport_products->ID, 'codosupport_product_respondent', true ));
 ?>
 <table>
     <tr class="codosupport-product-price">

@@ -69,7 +69,9 @@ function codosupport_shortcode($atts) {
         'products' => $codosupport_products,
         'user_id'  => $user_id,
         'login_url' => $login_url,
-        'base_url' => $current_page_url
+        'base_url' => $current_page_url,
+        'theme_bg_color' => '#0C87CC',
+        'theme_color' => '#ffffff'
     ));
     ob_start();
 	?>

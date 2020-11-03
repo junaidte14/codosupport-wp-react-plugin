@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ticketActions, alertActions } from '../../store/actions';
 import Spinner from '../spinner';
 
-const AddForm = () =>{
-
+const AddForm = (props) =>{
+    const {type, parent, setSelectedItem, setTicketView, setHistoryView} = props;
     const dispatch = useDispatch();
 
     const [title, setTitle] = useState('');
@@ -35,7 +35,7 @@ const AddForm = () =>{
 
     const uploadFiles = (e) => {
         e.preventDefault;
-        let files_data = jQuery('#codosupport-files').prop('files');
+        let files_data = jQuery('.codosupport-files')[0].files;
         let imgForm = jQuery('#codosupport-img-form')[0];
         let formData = new FormData(imgForm);
         for(let i=0; i<files_data.length; i++) {
@@ -43,9 +43,8 @@ const AddForm = () =>{
         }
         formData.append('action', 'codosupport_upload_files');
         formData.append('nonce', codosupport_data.nonce);
-
         dispatch(ticketActions.uploadFiles(formData)).then(res => {
-            jQuery('#codosupport-files').val('');
+            jQuery('.codosupport-files').val('');
             if(res.data && res.data.length){
                 setAttachments(res.data);
             }
@@ -78,9 +77,11 @@ const AddForm = () =>{
             title: title,
             product: product,
             description: description,
-            attachments: attachments
+            attachments: attachments,
+            parent: parent,
+            type: type
         }
-        if (tempItem.title && tempItem.description) {
+        if ((tempItem.title || type == 'history') && tempItem.description) {
             dispatch(ticketActions.addItem(tempItem)).then(res => {
                 setSubmitted(false);
                 if(res.type && res.type == 'success'){
@@ -88,6 +89,12 @@ const AddForm = () =>{
                     setDescription('');
                     setProduct('');
                     setAttachments([]);
+                    if(type == 'ticket'){
+                        setSelectedItem(res.post_id);
+                        setTicketView('viewTickets');
+                    }else{
+                        setHistoryView('viewHistory');
+                    }
                 }
             });
         }else{
@@ -101,24 +108,28 @@ const AddForm = () =>{
 
     return (
         <div className="codosupport-add-form">
-            <h2>Add Support Ticket</h2>
-            <div className="codo-form-field-wrapper">
-                <input type="text" className={'codo-form-field codo-full-width'} name="title" placeholder="Title" value={title} onChange={handleChange}/>
-                {submitted && !title &&
-                    <div className="codo-error">Title is required</div>
-                }
-            </div>
-
-            <div className="codo-form-field-wrapper">
-                <select value={product} name="product" className="codo-form-field codo-full-width" onChange={handleChange}> 
-                    <option value="">All Products</option>
-                    {codosupport_data.products &&
-                        codosupport_data.products.map(item => {
-                        return (<option value={item['ID']} key={item.ID}>{item[ 'post_title' ]}</option>)
-                        })
-                    }
-                </select>
-            </div>
+            <h2 style={{color: codosupport_data.theme_bg_color}}>{(type == 'ticket') ? 'Add Support Ticket': 'Add Ticket History'}</h2>
+            {
+                (type == 'ticket') &&
+                <>
+                    <div className="codo-form-field-wrapper">
+                        <input type="text" className={'codo-form-field codo-full-width'} name="title" placeholder="Title" value={title} onChange={handleChange}/>
+                        {submitted && !title &&
+                            <div className="codo-error">Title is required</div>
+                        }
+                    </div>
+                    <div className="codo-form-field-wrapper">
+                        <select value={product} name="product" className="codo-form-field codo-full-width" onChange={handleChange}> 
+                            <option value="">All Products</option>
+                            {codosupport_data.products &&
+                                codosupport_data.products.map(item => {
+                                return (<option value={item['ID']} key={item.ID}>{item[ 'post_title' ]}</option>)
+                                })
+                            }
+                        </select>
+                    </div>
+                </>
+            }
 
             <div className="codo-form-field-wrapper">
                 <textarea className={'codo-form-field codo-full-width'} name="description" placeholder="Description" value={description} onChange={handleChange}></textarea>
@@ -155,7 +166,13 @@ const AddForm = () =>{
             </div>
 
             <div className="codo-form-field-wrapper">
-                <button className="codosupport-button button" disabled={loading} onClick={submitForm}>Save</button>
+                <button className="codosupport-button button" 
+                style={{
+                    backgroundColor: codosupport_data.theme_bg_color,
+                    borderColor: codosupport_data.theme_bg_color,
+                    color: codosupport_data.theme_color
+                }}
+                disabled={loading} onClick={submitForm}>Save</button>
                 {loading &&
                     <Spinner showBlock={false}/>
                 }

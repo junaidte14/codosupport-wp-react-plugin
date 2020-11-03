@@ -4,7 +4,7 @@ import { ticketActions } from '../../store/actions';
 import Spinner from '../spinner';
 
 const List = (props) =>{
-    const {setSelectedItem} = props;
+    const {setSelectedItem, setHistoryView, setTicketView} = props;
     const dispatch = useDispatch();
     const ticketsState = useSelector(state => state.tickets, shallowEqual);
 
@@ -21,12 +21,12 @@ const List = (props) =>{
             }
             {codosupport_data.user_id && !loaderStatus &&
                 <div className="codosupport-tickets-list">
-                    {myTickets && myTickets.length &&
+                    {myTickets && myTickets.length !== 0 &&
                         myTickets.map(item => {
                             return (
                                 <div key={item.ID} className="list-item">
                                     <h2 className="item-title">
-                                        <a style={{cursor: 'pointer'}} onClick={() => setSelectedItem(item.ID)}>
+                                        <a style={{cursor: 'pointer', color: codosupport_data.theme_bg_color}} onClick={() => {setSelectedItem(item.ID); setHistoryView('viewHistory')}}>
                                             {item[ 'post_title' ]}
                                         </a>
                                     </h2>
@@ -35,6 +35,9 @@ const List = (props) =>{
                                 </div>
                             )
                         })
+                    }
+                    {myTickets && myTickets.length === 0 &&
+                        <p>No ticket exist. <a style={{cursor: 'pointer', color: codosupport_data.theme_bg_color}} onClick={() => {setTicketView('addTicket')}}>Add new Ticket.</a></p>
                     }
                 </div>
             }

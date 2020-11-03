@@ -139,31 +139,18 @@ class Codosupport_Admin {
 	}
 
 	public function codosupport_tickets_populate_columns($column){
-		$codosupport_tickets_options = get_post_meta( get_the_ID(), 'codosupport_tickets_options', true );
+		$codosupport_ticket_product = intval(get_post_meta( get_the_ID(), 'codosupport_ticket_product', true ));
+		$codosupport_product_respondent = intval(get_post_meta( $codosupport_ticket_product, 'codosupport_product_respondent', true ));
+		if ( 'codosupport_ticket_product' == $column ) {
+			echo ($codosupport_ticket_product != 0) ? get_the_title($codosupport_ticket_product): '';
+		}
 		if ( 'codosupport_ticket_respondent' == $column ) {
 			$respondent = '';
-			if(is_array($codosupport_tickets_options)){
-				$codosupport_ticket_product = isset($codosupport_tickets_options['codosupport_ticket_product']) ? $codosupport_tickets_options['codosupport_ticket_product'] : '';
-				if($codosupport_ticket_product != ''){
-					$codosupport_products_options = get_post_meta( intval($codosupport_ticket_product), 'codosupport_products_options', true );
-					if(is_array($codosupport_products_options)){
-						$codosupport_product_respondent = isset($codosupport_products_options['codosupport_product_respondent']) ? intval( $codosupport_products_options['codosupport_product_respondent'] ) : '';
-						if($codosupport_product_respondent != ''){
-							$user = get_user_by('ID', $codosupport_product_respondent);
-							if($user){
-								$respondent = $user->display_name;
-							}
-						}
-					}
-				}
+			$user = get_user_by('ID', $codosupport_product_respondent);
+			if($user){
+				$respondent = $user->display_name;
 			}
 			echo $respondent;
-		}
-		if ( 'codosupport_ticket_product' == $column ) {
-			if(is_array($codosupport_tickets_options)){
-				$codosupport_ticket_product = isset($codosupport_tickets_options['codosupport_ticket_product']) ? $codosupport_tickets_options['codosupport_ticket_product'] : '';
-			}
-			echo ($codosupport_ticket_product != '') ? get_the_title(intval($codosupport_ticket_product)): '';
 		}
 	}
 
@@ -200,27 +187,48 @@ class Codosupport_Admin {
 			exit("No naughty business please");
 		} 
 		
+		$ticket_type = isset($_REQUEST['type']) ? $_REQUEST['type']: "ticket";
 		$ticket_title = isset($_REQUEST['title']) ? $_REQUEST['title']: "";
 		$ticket_product = isset($_REQUEST['product']) ? $_REQUEST['product']: "";
 		$ticket_description = isset($_REQUEST['description']) ? $_REQUEST['description']: "";
 		$ticket_attachments = isset($_REQUEST['attachments']) ? $_REQUEST['attachments']: [];
+		$ticket_parent = isset($_REQUEST['parent']) ? $_REQUEST['parent']: 0;
 		$ticket_user_id = isset($_REQUEST['user_id']) ? $_REQUEST['user_id']: null;
 		$ticket_date = date();
 		// insert the submitted ticket
-		$post_id = wp_insert_post(array (
-			'post_type' => 'codosupport_tickets',
-			'post_title' => $ticket_title,
-			'post_content' => $ticket_description,
-			'post_status' => 'publish',
-			'post_date'   => $ticket_date,
-			'ping_status' => 'closed',      // if you prefer
-		));
+		if($ticket_type == 'ticket'){
+			$post_id = wp_insert_post(array (
+				'post_type' => 'codosupport_tickets',
+				'post_title' => $ticket_title,
+				'post_content' => $ticket_description,
+				'post_status' => 'publish',
+				'post_date'   => $ticket_date,
+				'ping_status' => 'closed',      // if you prefer
+			));
+		}else{
+			$post_id = wp_insert_post(array (
+				'post_type' => 'codosupport_tickets',
+				'post_title' => $ticket_title,
+				'post_content' => $ticket_description,
+				'post_status' => 'publish',
+				'post_date'   => $ticket_date,
+				'post_parent' => $ticket_parent,
+				'ping_status' => 'closed',      // if you prefer
+			));
+		}
 
 		if ($post_id) {
 			// insert post meta
-			update_post_meta($post_id, 'codosupport_ticket_product', $ticket_product);
+			if($ticket_type == 'ticket'){
+				update_post_meta($post_id, 'codosupport_ticket_product', $ticket_product);
+			}
 			update_post_meta($post_id, 'codosupport_ticket_user', $ticket_user_id);
 			update_post_meta($post_id, 'codosupport_ticket_attachments', $ticket_attachments);
+
+			$count_obj = wp_count_posts('codosupport_tickets');
+			$ticket_number = $count_obj->publish + $count_obj->trash;
+			update_post_meta($post_id, 'codosupport_ticket_number', $ticket_number);
+			
 			foreach ($ticket_attachments as $attachment) {
 				if( 'attachment' === get_post_type( $attachment['attach_id'] ) ) {
 					$media_post = wp_update_post( array(
@@ -242,6 +250,7 @@ class Codosupport_Admin {
 		);
 
 		$result['data'] = $newItem;
+		$result['post_id'] = $post_id;
 
 		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
 			$result = json_encode($result);
@@ -390,6 +399,23 @@ class Codosupport_Admin {
 
 		if ($ticket_id) {
 			$ticket = get_post($ticket_id, 'ARRAY_A');
+			$ticket_attachments = get_post_meta( $ticket_id, 'codosupport_ticket_attachments', true );
+			$ticket_attachments = isset($ticket_attachments)? $ticket_attachments: [];
+			$ticket_user = get_post_meta( $ticket_id, 'codosupport_ticket_user', true );
+			$ticket_user = isset($ticket_user)? intval($ticket_user): 0;
+			$ticket_number = get_post_meta( $ticket_id, 'codosupport_ticket_number', true );
+			$ticket_product = intval(get_post_meta( $ticket_id, 'codosupport_ticket_product', true ));
+			$ticket_product_title = get_the_title($ticket_product);
+			$ticket_respondent = get_post_meta( $ticket_product, 'codosupport_product_respondent', true );
+			$respondent_data = get_user_by('ID', $ticket_respondent);
+			$ticket['respondent_display_name'] = $respondent_data->display_name;
+
+			$user = get_user_by('ID', $ticket_user);
+			$ticket['display_name'] = $user->display_name;
+			$ticket['attachments'] = $ticket_attachments;
+			$ticket['number'] = $ticket_number;
+			$ticket['product'] = $ticket_product_title;
+
 			$result['data'] = $ticket;
 			$result['type'] = "success";
 		}else{
@@ -414,8 +440,38 @@ class Codosupport_Admin {
 		
 		$result = [];
 		$user_id = isset($_REQUEST['user_id']) ? intval($_REQUEST['user_id']): null;
+		$post_parent = isset($_REQUEST['post_parent']) ? intval($_REQUEST['post_parent']): 0;
 
-		if ($user_id) {
+		if($post_parent == 0){
+			//get tickets
+			if ($user_id) {
+				$paged = isset($_REQUEST['paged']) ? intval($_REQUEST['paged']): 0;
+				$postsPerPage = isset($_REQUEST['posts_per_page']) ? intval($_REQUEST['posts_per_page']): 5;
+				$postOffset = $paged * $postsPerPage;
+				$tickets = get_posts(
+					array(
+						'numberposts' => $postsPerPage,
+						'offset'          => $postOffset,
+						'post_type' => 'codosupport_tickets',
+						'post_parent' => 0,
+						'meta_query' => array(
+							'key' => 'codosupport_ticket_user',
+							'value' => $user_id,
+							'compare' => '='
+						)
+					)
+				);
+
+				$user = get_user_by('ID', $user_id);
+				$result['user_display_name'] = $user->display_name;
+	
+				$result['data'] = $tickets;
+				$result['type'] = "success";
+			}else{
+				$result['type'] = "failure";
+			}
+		}else{
+			//get ticket history
 			$paged = isset($_REQUEST['paged']) ? intval($_REQUEST['paged']): 0;
 			$postsPerPage = isset($_REQUEST['posts_per_page']) ? intval($_REQUEST['posts_per_page']): 5;
 			$postOffset = $paged * $postsPerPage;
@@ -424,21 +480,20 @@ class Codosupport_Admin {
 					'numberposts' => $postsPerPage,
 					'offset'          => $postOffset,
 					'post_type' => 'codosupport_tickets',
-					'meta_query' => array(
-						'key' => 'codosupport_ticket_user',
-						'value' => $user_id,
-						'compare' => '='
-					)
+					'post_parent' => $post_parent,
 				)
 			);
 
-			$result['data'] = $tickets;
+			$newTickets = [];
+			foreach ($tickets as $ticket) {
+				$ticket_user = intval(get_post_meta( $ticket->ID, 'codosupport_ticket_user', true ));
+				$user = get_user_by('ID', $ticket_user);
+				$ticket->display_name = $user->display_name;
+				$newTickets[] = $ticket;
+			}
+			$result['data'] = $newTickets;
 			$result['type'] = "success";
-		}else{
-			$result['type'] = "failure";
 		}
-
-		//$result['data'] = $attach_id;
 
 		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
 			$result = json_encode($result);
@@ -492,21 +547,16 @@ class Codosupport_Admin {
 	}
 
 	public function codosupport_products_populate_columns($column){
-		$codosupport_products_options = get_post_meta( get_the_ID(), 'codosupport_products_options', true );
 		if ( 'codosupport_product_price' == $column ) {
-			if(is_array($codosupport_products_options)){
-				$codosupport_product_price = isset($codosupport_products_options['codosupport_product_price']) ? $codosupport_products_options['codosupport_product_price'] : '';
-			}
+			$codosupport_product_price = intval(get_post_meta( get_the_ID(), 'codosupport_product_price', true ));
 			echo $codosupport_product_price;
 		}
 
 		if ( 'codosupport_product_respondent' == $column ) {
-			$codosupport_product_respondent = isset($codosupport_products_options['codosupport_product_respondent']) ? intval( $codosupport_products_options['codosupport_product_respondent'] ) : '';
-			if($codosupport_product_respondent != ''){
-				$user = get_user_by('ID', $codosupport_product_respondent);
-				if($user){
-					$codosupport_product_respondent = $user->display_name;
-				}
+			$codosupport_product_respondent = intval(get_post_meta( get_the_ID(), 'codosupport_product_respondent', true ));
+			$user = get_user_by('ID', $codosupport_product_respondent);
+			if($user){
+				$codosupport_product_respondent = $user->display_name;
 			}
 			echo $codosupport_product_respondent;
 		}

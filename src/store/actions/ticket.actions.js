@@ -4,6 +4,7 @@ import { ticketService } from '../services/ticket.service';
 
 export const ticketActions = {
     getAll,
+    getAllByAttr,
     getItemById,
     addItem,
     updateItem,
@@ -26,6 +27,26 @@ function getAll(user_id) {
             }),
             error => dispatch({ 
                 type: actionTypes.TICKETS.GETALL_FAILURE, 
+                error 
+            })
+        );
+    };
+}
+
+function getAllByAttr(parent) {
+    return dispatch => {
+        dispatch({ 
+            type: actionTypes.TICKETS.GETALLBYATTR_REQUEST 
+        });
+
+        ticketService.getAll(null, parent)
+        .then(
+            tickets => dispatch({ 
+                type: actionTypes.TICKETS.GETALLBYATTR_SUCCESS, 
+                tickets 
+            }),
+            error => dispatch({ 
+                type: actionTypes.TICKETS.GETALLBYATTR_FAILURE, 
                 error 
             })
         );
@@ -72,7 +93,8 @@ function addItem(item) {
                 res => {
                     dispatch({ 
                         type: actionTypes.TICKETS.ADD_SUCCESS,
-                        newItem: res.data
+                        newItem: res.data,
+                        type: item.type
                     });
                     dispatch(alertActions.success('Item is successfully added!'));
                     resolve(res);

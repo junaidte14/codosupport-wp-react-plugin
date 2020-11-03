@@ -176,7 +176,7 @@ class Codosupport {
 		//custom columns for tickets post type
 		$this->loader->add_filter( 'manage_edit-codosupport_tickets_columns', $plugin_admin, 'codosupport_tickets_columns' );
 		//populate custom columns for tickets post type
-		$this->loader->add_action( 'manage_posts_custom_column', $plugin_admin, 'codosupport_tickets_populate_columns' );
+		$this->loader->add_action( 'manage_pages_custom_column', $plugin_admin, 'codosupport_tickets_populate_columns' );
 		//$this->loader->add_action( 'init', $plugin_admin, 'codosupport_ticket_categories', 0 );
 		//ticket ajax hooks to add new ticket
 		$this->loader->add_action("wp_ajax_codosupport_add_new_ticket", $plugin_admin, "codosupport_add_new_ticket");

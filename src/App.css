@@ -1,3 +1,16 @@
+.codo-w-main, .codo-w-side{
+    float: left;
+}
+
+.codo-w-main{
+    width: 70%;
+    overflow: hidden;
+}
+
+.codo-w-side{
+    padding: 0 0 0 2%;
+    width: 30%;
+}
 .codo-w-250{
     min-width: 150px !important; 
     max-width: 150px !important;
@@ -5,6 +18,7 @@
 
 .codo-full-width{
     width: 100%;
+    overflow: hidden;
 }
 
 .codo-form-field{
@@ -16,47 +30,35 @@
     color: red;
 }
 
-/* Style the tab */
-.codosupport-tab {
-    overflow: hidden;
-    border: 1px solid #ccc;
-    background-color: #f1f1f1;
+.codoflex-nav-wrapper{
+    display: flex;
 }
-
-/* Style the buttons inside the tab */
-.codosupport-tab button {
-    float: left;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    padding: 14px 16px;
-    transition: 0.3s;
-    font-size: 17px;
-    opacity: 0.6;
-}
-
-/* Change background color of buttons on hover */
-.codosupport-tab button:hover {
-    opacity: 1;
-}
-
-/* Create an active/current tablink class */
-.codosupport-tab button.active {
-    opacity: 1;
-}
-
-/* Style the tab content */
-.codosupport-tabcontent {
-    display: none;
-    padding: 6px 12px;
-    border: 1px solid #ccc;
-    border-top: none;
+  
+.codoflex-nav-spacer{
+    flex-grow: 1;
 }
 
 .codo-form-field-wrapper{
     margin-bottom: 10px;
 }
 
-.codosupport-tickets-list .list-item{
-    border-bottom: 1px solid #eeeeee;
+.codosupport-ticket{
+    overflow: hidden;
+}
+
+.codosupport-tickets-list .list-item,
+.codosupport-ticket .list-item-meta,
+.codosupport-ticket .list-item-details,
+.codosupport-ticket .add-history,
+.codosupport-ticket .history-list-item{
+    padding: 20px 0;
+}
+
+.codosupport .list-item-meta .meta-entry-key,
+.codosupport .item-attachments .meta-entry-key{
+    font-weight: bold;
+}
+
+.codosupport .item-bg-title{
+    padding: 10px;
 }

@@ -20,8 +20,9 @@ register_post_type( 'codosupport_tickets', array(
     'publicaly_queryable' => false,
     'query_var' => false,
     'exclude_from_search' => true,
-    'supports' => array( 'title', 'editor' ),
-    'taxonomies' => array( 'ticket_categories' ),
+    'supports' => array( 'title', 'editor', 'page-attributes' ),
+    'taxonomies' => array( '' ),
     'has_archive' => false,
-    'show_in_menu' => false
+    'show_in_menu' => false,
+    'hierarchical' => true
 ));

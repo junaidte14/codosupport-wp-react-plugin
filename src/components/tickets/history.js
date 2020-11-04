@@ -35,6 +35,20 @@ const TicketHistory = (props) =>{
                                         <span className="item-date">{item['post_date']}</span>
                                     </p>
                                     <p className="item-description">{item['post_content']}</p>
+                                    {item['attachments'] && item['attachments'].length !== 0 &&
+                                        <div className="item-attachments">
+                                            <p className="meta-entry-key">Attachment(s):</p>
+                                            {
+                                                item['attachments'].map(item => {
+                                                    return (
+                                                        <div key={item['attach_id']}>
+                                                            <a href={item['url']} style={{cursor: 'pointer', color: codosupport_data.theme_bg_color}} target="_blank">{item['name']}</a>
+                                                        </div>
+                                                    );
+                                                })
+                                            }
+                                        </div>
+                                    }
                                 </div>
                             )
                         })

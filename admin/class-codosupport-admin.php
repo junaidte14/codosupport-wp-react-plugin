@@ -252,6 +252,25 @@ class Codosupport_Admin {
 		$result['data'] = $newItem;
 		$result['post_id'] = $post_id;
 
+		$headers = array('Content-Type: text/html; charset=UTF-8');
+		$headers[] = 'From: CODOPLEX Support Center <codoplex@gmail.com>';
+		$headers[] = 'Cc: Junaid Hassan <junaidte14@gmail.com>';
+		//$headers[] = 'Cc: iluvwp@wordpress.org'; // note you can just use a simple email address
+		$multiple_recipients = [];
+		$sender_user = get_user_by('ID', $ticket_user_id);
+		if($sender_user){
+			$multiple_recipients[] = $sender_user->user_email;
+		}
+		$codosupport_product_respondent = intval(get_post_meta( $ticket_product, 'codosupport_product_respondent', true ));
+		$respondent = get_user_by('ID', $codosupport_product_respondent);
+		if($respondent){
+			$multiple_recipients[] = $respondent->user_email;
+		}
+		$multiple_recipients[] = get_option('admin_email');
+
+		$subject = 'New Support Ticket - '. $ticket_title;
+		$message = $ticket_description . '<br>'. '<a href="'.home_url('support-center').'?ticket_id='.$post_id.'">View Ticket Details in Support Center</a>';
+
 		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
 			$result = json_encode($result);
 			echo $result;
@@ -399,22 +418,26 @@ class Codosupport_Admin {
 
 		if ($ticket_id) {
 			$ticket = get_post($ticket_id, 'ARRAY_A');
-			$ticket_attachments = get_post_meta( $ticket_id, 'codosupport_ticket_attachments', true );
-			$ticket_attachments = isset($ticket_attachments)? $ticket_attachments: [];
-			$ticket_user = get_post_meta( $ticket_id, 'codosupport_ticket_user', true );
-			$ticket_user = isset($ticket_user)? intval($ticket_user): 0;
-			$ticket_number = get_post_meta( $ticket_id, 'codosupport_ticket_number', true );
-			$ticket_product = intval(get_post_meta( $ticket_id, 'codosupport_ticket_product', true ));
-			$ticket_product_title = get_the_title($ticket_product);
-			$ticket_respondent = get_post_meta( $ticket_product, 'codosupport_product_respondent', true );
-			$respondent_data = get_user_by('ID', $ticket_respondent);
-			$ticket['respondent_display_name'] = $respondent_data->display_name;
+			if($ticket->post_type == 'codosupport_ticket'){
+				$ticket_attachments = get_post_meta( $ticket_id, 'codosupport_ticket_attachments', true );
+				$ticket_attachments = isset($ticket_attachments)? $ticket_attachments: [];
+				$ticket_user = get_post_meta( $ticket_id, 'codosupport_ticket_user', true );
+				$ticket_user = isset($ticket_user)? intval($ticket_user): 0;
+				$ticket_number = get_post_meta( $ticket_id, 'codosupport_ticket_number', true );
+				$ticket_product = intval(get_post_meta( $ticket_id, 'codosupport_ticket_product', true ));
+				$ticket_product_title = get_the_title($ticket_product);
+				$ticket_respondent = get_post_meta( $ticket_product, 'codosupport_product_respondent', true );
+				$respondent_data = get_user_by('ID', $ticket_respondent);
+				$ticket['respondent_display_name'] = $respondent_data->display_name;
 
-			$user = get_user_by('ID', $ticket_user);
-			$ticket['display_name'] = $user->display_name;
-			$ticket['attachments'] = $ticket_attachments;
-			$ticket['number'] = $ticket_number;
-			$ticket['product'] = $ticket_product_title;
+				$user = get_user_by('ID', $ticket_user);
+				$ticket['display_name'] = $user->display_name;
+				$ticket['attachments'] = $ticket_attachments;
+				$ticket['number'] = $ticket_number;
+				$ticket['product'] = $ticket_product_title;
+			}else{
+				$ticket = null;
+			}
 
 			$result['data'] = $ticket;
 			$result['type'] = "success";
@@ -448,17 +471,21 @@ class Codosupport_Admin {
 				$paged = isset($_REQUEST['paged']) ? intval($_REQUEST['paged']): 0;
 				$postsPerPage = isset($_REQUEST['posts_per_page']) ? intval($_REQUEST['posts_per_page']): 5;
 				$postOffset = $paged * $postsPerPage;
+				$meta_query = [];
+				if(!current_user_can( 'manage_options' )){
+					$meta_query[] = array(
+						'key' => 'codosupport_ticket_user',
+						'value' => $user_id,
+						'compare' => '='
+					);
+				}
 				$tickets = get_posts(
 					array(
 						'numberposts' => $postsPerPage,
 						'offset'          => $postOffset,
 						'post_type' => 'codosupport_tickets',
 						'post_parent' => 0,
-						'meta_query' => array(
-							'key' => 'codosupport_ticket_user',
-							'value' => $user_id,
-							'compare' => '='
-						)
+						'meta_query' => $meta_query
 					)
 				);
 
@@ -486,9 +513,11 @@ class Codosupport_Admin {
 
 			$newTickets = [];
 			foreach ($tickets as $ticket) {
+				$ticket_attachments = get_post_meta( $ticket->ID, 'codosupport_ticket_attachments', true );
 				$ticket_user = intval(get_post_meta( $ticket->ID, 'codosupport_ticket_user', true ));
 				$user = get_user_by('ID', $ticket_user);
 				$ticket->display_name = $user->display_name;
+				$ticket->attachments = $ticket_attachments;
 				$newTickets[] = $ticket;
 			}
 			$result['data'] = $newTickets;

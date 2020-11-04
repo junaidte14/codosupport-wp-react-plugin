@@ -63,12 +63,16 @@ function codosupport_shortcode($atts) {
     $current_page_url = codosupport_get_current_page_url();
     $login_url = wp_login_url($current_page_url);
 
+    $selected_ticket = isset($_GET['ticket_id']) ? $_GET['ticket_id']: null;
+
     wp_localize_script( 'codosupport-react-app', 'codosupport_data', array( 
         'ajaxurl' => admin_url( 'admin-ajax.php' ),
         'nonce' => $nonce,
         'products' => $codosupport_products,
+        'selected_ticket' => $selected_ticket,
         'user_id'  => $user_id,
         'login_url' => $login_url,
+        'register_url' => wp_registration_url(),
         'base_url' => $current_page_url,
         'theme_bg_color' => '#0C87CC',
         'theme_color' => '#ffffff'

@@ -105,6 +105,9 @@ const Single = (props) =>{
                             </div>
                         </>
                     }
+                    {!myTicket &&
+                        <p>The requested ticket does not exist!</p>
+                    }
                 </div>
             }
             {!codosupport_data.user_id &&

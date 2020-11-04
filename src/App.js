@@ -15,7 +15,7 @@ const App = () =>{
       dispatch(alertActions.clear());
   });
 
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(codosupport_data.selected_ticket);
 
   return (
     <div className="codosupport-app">
@@ -97,7 +97,7 @@ const App = () =>{
         {!codosupport_data.user_id &&
           <div className={`alert alert-danger`}>
             Please login to submit a support ticket! 
-            <a href={codosupport_data.login_url}>Login</a>
+            <a href={codosupport_data.login_url}>Login</a> OR <a href={codosupport_data.register_url}>Register</a>
           </div>
         }
       </div>

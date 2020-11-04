@@ -21,10 +21,12 @@ function getAll(user_id) {
 
         ticketService.getAll(user_id)
         .then(
-            tickets => dispatch({ 
-                type: actionTypes.TICKETS.GETALL_SUCCESS, 
-                tickets 
-            }),
+            (tickets) => {
+                dispatch({ 
+                    type: actionTypes.TICKETS.GETALL_SUCCESS, 
+                    tickets 
+                })
+            },
             error => dispatch({ 
                 type: actionTypes.TICKETS.GETALL_FAILURE, 
                 error 
@@ -41,10 +43,12 @@ function getAllByAttr(parent) {
 
         ticketService.getAll(null, parent)
         .then(
-            tickets => dispatch({ 
-                type: actionTypes.TICKETS.GETALLBYATTR_SUCCESS, 
-                tickets 
-            }),
+            (tickets) => {
+                dispatch({ 
+                    type: actionTypes.TICKETS.GETALLBYATTR_SUCCESS, 
+                    tickets 
+                })
+            },
             error => dispatch({ 
                 type: actionTypes.TICKETS.GETALLBYATTR_FAILURE, 
                 error 

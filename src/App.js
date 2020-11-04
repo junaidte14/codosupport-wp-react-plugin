@@ -69,7 +69,7 @@ const App = () =>{
             {
               (ticketView === 'addTicket') && 
                 <AddForm 
-                  type='ticket' 
+                  type='ticket'
                   parent={0} 
                   setSelectedItem={setSelectedItem} 
                   setTicketView={setTicketView}

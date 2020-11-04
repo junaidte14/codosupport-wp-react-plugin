@@ -418,7 +418,7 @@ class Codosupport_Admin {
 
 		if ($ticket_id) {
 			$ticket = get_post($ticket_id, 'ARRAY_A');
-			if($ticket->post_type == 'codosupport_ticket'){
+			if($ticket['post_type'] == 'codosupport_tickets'){
 				$ticket_attachments = get_post_meta( $ticket_id, 'codosupport_ticket_attachments', true );
 				$ticket_attachments = isset($ticket_attachments)? $ticket_attachments: [];
 				$ticket_user = get_post_meta( $ticket_id, 'codosupport_ticket_user', true );

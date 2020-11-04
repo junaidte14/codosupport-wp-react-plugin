@@ -132,6 +132,7 @@ const AddForm = (props) =>{
             }
 
             <div className="codo-form-field-wrapper">
+                <p>Please provide as much details as you can e.g. website URL, transaction ID (if applicable), etc.</p>
                 <textarea className={'codo-form-field codo-full-width'} name="description" placeholder="Description" value={description} onChange={handleChange}></textarea>
                 {submitted && !description &&
                     <div className="codo-error">Description is required</div>

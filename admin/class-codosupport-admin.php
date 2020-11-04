@@ -219,15 +219,65 @@ class Codosupport_Admin {
 
 		if ($post_id) {
 			// insert post meta
+			$headers = array('Content-Type: text/html; charset=UTF-8');
+			$headers[] = 'From: CODOPLEX Support Center <codoplex@gmail.com>';
+			$headers[] = 'Cc: Junaid Hassan <junaidte14@gmail.com>';
+			$multiple_recipients = [];
+			$multiple_recipients[] = get_option('admin_email');
 			if($ticket_type == 'ticket'){
 				update_post_meta($post_id, 'codosupport_ticket_product', $ticket_product);
-			}
-			update_post_meta($post_id, 'codosupport_ticket_user', $ticket_user_id);
-			update_post_meta($post_id, 'codosupport_ticket_attachments', $ticket_attachments);
+				update_post_meta($post_id, 'codosupport_ticket_user', $ticket_user_id);
+				update_post_meta($post_id, 'codosupport_ticket_attachments', $ticket_attachments);
 
-			$count_obj = wp_count_posts('codosupport_tickets');
-			$ticket_number = $count_obj->publish + $count_obj->trash;
-			update_post_meta($post_id, 'codosupport_ticket_number', $ticket_number);
+				$ticket_submitter = intval(get_post_meta( $post_id, 'codosupport_ticket_user', true ));
+				$sender_user = get_user_by('ID', $ticket_submitter);
+				if($sender_user){
+					$multiple_recipients[] = $sender_user->user_email;
+				}
+				$codosupport_product_respondent = intval(get_post_meta( $ticket_product, 'codosupport_product_respondent', true ));
+				$respondent = get_user_by('ID', $codosupport_product_respondent);
+				if($respondent && $codosupport_product_respondent != $ticket_user_id){
+					$multiple_recipients[] = $respondent->user_email;
+				}
+
+				$subject = 'New Support Ticket - '.$ticket_title;
+				$message = '
+					<p>'.$ticket_title.'</p>
+					<p>'.$ticket_description . '</p>'. '
+					<a href="'.home_url('support-center').'?ticket_id='.$post_id.'">View Ticket Details in Support Center</a>
+					<p>The ticket has been successfully created and we will get back as soon as possible. Thanks</p>';
+			}else{
+				update_post_meta($post_id, 'codosupport_ticket_user', $ticket_user_id);
+				update_post_meta($post_id, 'codosupport_ticket_attachments', $ticket_attachments);
+
+				$ticket_submitter = intval(get_post_meta( $ticket_parent, 'codosupport_ticket_user', true ));
+				$sender_user = get_user_by('ID', $ticket_submitter);
+				if($sender_user){
+					$multiple_recipients[] = $sender_user->user_email;
+				}
+				$ticket_product = intval(get_post_meta( $ticket_parent, 'codosupport_product_respondent', true ));
+				$codosupport_product_respondent = intval(get_post_meta( $ticket_product, 'codosupport_product_respondent', true ));
+				$respondent = get_user_by('ID', $codosupport_product_respondent);
+				if($respondent && $codosupport_product_respondent != $ticket_user_id){
+					$multiple_recipients[] = $respondent->user_email;
+				}
+
+				$subject = 'Ticket History is Added - '.get_the_title($ticket_parent);
+				$message = '
+					<p>'.$ticket_description . '</p>'. '
+					<a href="'.home_url('support-center').'?ticket_id='.$ticket_parent.'">View Ticket Details in Support Center</a>
+					<p>The ticket history is successfully added. Thanks</p>';
+			}
+
+			$total_tickets = count(get_posts(
+				array(
+					'numberposts' => -1,
+					'post_type' => 'codosupport_tickets',
+					'post_parent' => 0,
+					'post_status' => array('publish', 'trash')
+				)
+			));
+			update_post_meta($post_id, 'codosupport_ticket_number', $total_tickets);
 			
 			foreach ($ticket_attachments as $attachment) {
 				if( 'attachment' === get_post_type( $attachment['attach_id'] ) ) {
@@ -252,24 +302,7 @@ class Codosupport_Admin {
 		$result['data'] = $newItem;
 		$result['post_id'] = $post_id;
 
-		$headers = array('Content-Type: text/html; charset=UTF-8');
-		$headers[] = 'From: CODOPLEX Support Center <codoplex@gmail.com>';
-		$headers[] = 'Cc: Junaid Hassan <junaidte14@gmail.com>';
-		//$headers[] = 'Cc: iluvwp@wordpress.org'; // note you can just use a simple email address
-		$multiple_recipients = [];
-		$sender_user = get_user_by('ID', $ticket_user_id);
-		if($sender_user){
-			$multiple_recipients[] = $sender_user->user_email;
-		}
-		$codosupport_product_respondent = intval(get_post_meta( $ticket_product, 'codosupport_product_respondent', true ));
-		$respondent = get_user_by('ID', $codosupport_product_respondent);
-		if($respondent){
-			$multiple_recipients[] = $respondent->user_email;
-		}
-		$multiple_recipients[] = get_option('admin_email');
-
-		$subject = 'New Support Ticket - '. $ticket_title;
-		$message = $ticket_description . '<br>'. '<a href="'.home_url('support-center').'?ticket_id='.$post_id.'">View Ticket Details in Support Center</a>';
+		wp_mail( $multiple_recipients, $subject, $message, $headers );
 
 		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
 			$result = json_encode($result);

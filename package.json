@@ -14,7 +14,7 @@
     "test:e2e": "wp-scripts test-e2e",
     "test:unit": "wp-scripts test-unit-js",
     "dev": "webpack --watch",
-    "bundle": "dir-archiver --src . --dest ../wp-react-plugin-starter.zip --exclude .DS_Store .stylelintrc.json .eslintrc.json .eslintignore .editorconfig .git .gitattributes .github .gitignore .babelrc webpack.config.js readme.md node_modules package-lock.json package.json src"
+    "bundle": "dir-archiver --src . --dest ../codosupport.zip --exclude .DS_Store .stylelintrc.json .eslintrc.json .eslintignore .editorconfig .git .gitattributes .github .gitignore .babelrc webpack.config.js readme.md node_modules package-lock.json package.json src"
   },
   "repository": {
     "type": "git",

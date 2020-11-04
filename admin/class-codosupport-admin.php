@@ -221,9 +221,8 @@ class Codosupport_Admin {
 			// insert post meta
 			$headers = array('Content-Type: text/html; charset=UTF-8');
 			$headers[] = 'From: CODOPLEX Support Center <codoplex@gmail.com>';
-			$headers[] = 'Cc: Junaid Hassan <junaidte14@gmail.com>';
+			$headers[] = 'Cc: <'.get_option('admin_email').'>';
 			$multiple_recipients = [];
-			$multiple_recipients[] = get_option('admin_email');
 			if($ticket_type == 'ticket'){
 				update_post_meta($post_id, 'codosupport_ticket_product', $ticket_product);
 				update_post_meta($post_id, 'codosupport_ticket_user', $ticket_user_id);

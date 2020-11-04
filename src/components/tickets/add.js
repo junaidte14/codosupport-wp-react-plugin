@@ -110,7 +110,7 @@ const AddForm = (props) =>{
         <div className="codosupport-add-form">
             <h2 style={{color: codosupport_data.theme_bg_color}}>{(type == 'ticket') ? 'Add Support Ticket': 'Add Ticket History'}</h2>
             {
-                (type == 'ticket') &&
+                (type === 'ticket') &&
                 <>
                     <div className="codo-form-field-wrapper">
                         <input type="text" className={'codo-form-field codo-full-width'} name="title" placeholder="Title" value={title} onChange={handleChange}/>

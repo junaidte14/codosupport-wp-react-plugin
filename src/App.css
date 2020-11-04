@@ -42,6 +42,10 @@
     margin-bottom: 10px;
 }
 
+.codo-form-field-wrapper select{
+    display: block;
+}
+
 .codosupport-ticket{
     overflow: hidden;
 }

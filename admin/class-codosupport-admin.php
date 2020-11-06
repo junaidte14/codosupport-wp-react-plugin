@@ -478,7 +478,7 @@ class Codosupport_Admin {
 			//get tickets
 			if ($user_id) {
 				$paged = isset($_REQUEST['paged']) ? intval($_REQUEST['paged']): 0;
-				$postsPerPage = isset($_REQUEST['posts_per_page']) ? intval($_REQUEST['posts_per_page']): 5;
+				$postsPerPage = isset($_REQUEST['posts_per_page']) ? intval($_REQUEST['posts_per_page']): 3;
 				$postOffset = $paged * $postsPerPage;
 				$meta_query = [];
 				if(!current_user_can( 'manage_options' )){
@@ -500,6 +500,14 @@ class Codosupport_Admin {
 
 				$user = get_user_by('ID', $user_id);
 				$result['user_display_name'] = $user->display_name;
+				$result['total_items'] = count(get_posts(
+					array(
+						'numberposts' => -1,
+						'post_type' => 'codosupport_tickets',
+						'post_parent' => 0,
+						'meta_query' => $meta_query
+					)
+				));
 	
 				$result['data'] = $tickets;
 				$result['type'] = "success";

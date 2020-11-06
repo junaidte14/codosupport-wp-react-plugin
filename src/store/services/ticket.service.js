@@ -8,7 +8,7 @@ export const ticketService = {
     removeFile
 };
 
-function getAll(user_id = null, parent = 0) {
+function getAll(user_id = null, parent = 0, paged = 0, posts_per_page = 5) {
     return jQuery.ajax({
         type : "post",
         dataType : "json",
@@ -17,7 +17,9 @@ function getAll(user_id = null, parent = 0) {
             action: "codosupport_get_tickets", 
             nonce: codosupport_data.nonce,
             user_id: user_id,
-            post_parent: parent
+            post_parent: parent,
+            paged: paged,
+            posts_per_page: posts_per_page
         }
     });
 }

@@ -6,10 +6,8 @@ import Spinner from '../spinner';
 const AddForm = (props) =>{
     const {type, parent, setSelectedItem, setTicketView, setHistoryView} = props;
     const dispatch = useDispatch();
-    console.log(codosupport_data);
 
     const [title, setTitle] = useState('');
-    //const [product, setProduct] = useState('');
     const [category, setCategory] = useState('');
     const [description, setDescription] = useState('');
     const [attachments, setAttachments] = useState([]);
@@ -24,9 +22,6 @@ const AddForm = (props) =>{
             case 'title':
                 setTitle(value);
                 break;
-            /* case 'product':
-                setProduct(value);
-                break; */
             case 'category':
                 setCategory(value);
                 break;
@@ -80,7 +75,6 @@ const AddForm = (props) =>{
         setSubmitted(true);
         let tempItem = {
             title: title,
-            //product: product,
             category: category,
             description: description,
             attachments: attachments,
@@ -93,7 +87,6 @@ const AddForm = (props) =>{
                 if(res.type && res.type == 'success'){
                     setTitle('');
                     setDescription('');
-                    //setProduct('');
                     setCategory('');
                     setAttachments([]);
                     if(type == 'ticket'){
@@ -125,16 +118,6 @@ const AddForm = (props) =>{
                             <div className="codo-error">Title is required</div>
                         }
                     </div>
-                    {/* <div className="codo-form-field-wrapper">
-                        <select value={product} name="product" className="codo-form-field codo-full-width" onChange={handleChange}> 
-                            <option value="">All Products</option>
-                            {codosupport_data.products &&
-                                codosupport_data.products.map(item => {
-                                return (<option value={item['ID']} key={item.ID}>{item[ 'post_title' ]}</option>)
-                                })
-                            }
-                        </select>
-                    </div> */}
                     <div className="codo-form-field-wrapper">
                         <select value={category} name="category" className="codo-form-field codo-full-width" onChange={handleChange}> 
                             <option value="">Select Category</option>
@@ -154,8 +137,7 @@ const AddForm = (props) =>{
             }
 
             <div className="codo-form-field-wrapper">
-                <p>Please provide as much details as you can e.g. website URL, transaction ID (if applicable), etc.</p>
-                <textarea className={'codo-form-field codo-full-width'} name="description" placeholder="Description" value={description} onChange={handleChange}></textarea>
+                <textarea className={'codo-form-field codo-full-width'} name="description" placeholder="Please provide as much details as you can e.g. website URL, transaction ID (if applicable), etc." value={description} onChange={handleChange}></textarea>
                 {submitted && !description &&
                     <div className="codo-error">Description is required</div>
                 }

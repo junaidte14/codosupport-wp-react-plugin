@@ -13,25 +13,31 @@ export const ticketActions = {
     removeFile
 };
 
-function getAll(user_id) {
+function getAll(user_id, parent, paged, posts_per_page) {
     return dispatch => {
-        dispatch({ 
-            type: actionTypes.TICKETS.GETALL_REQUEST 
-        });
+        return new Promise((resolve, reject) => {
+            dispatch({ 
+                type: actionTypes.TICKETS.GETALL_REQUEST 
+            });
 
-        ticketService.getAll(user_id)
-        .then(
-            (tickets) => {
-                dispatch({ 
-                    type: actionTypes.TICKETS.GETALL_SUCCESS, 
-                    tickets 
-                })
-            },
-            error => dispatch({ 
-                type: actionTypes.TICKETS.GETALL_FAILURE, 
-                error 
-            })
-        );
+            ticketService.getAll(user_id, parent, paged, posts_per_page)
+            .then(
+                (response) => {
+                    dispatch({ 
+                        type: actionTypes.TICKETS.GETALL_SUCCESS, 
+                        tickets: response 
+                    });
+                    resolve(response);
+                },
+                error => {
+                    dispatch({ 
+                        type: actionTypes.TICKETS.GETALL_FAILURE, 
+                        error 
+                    });
+                    reject();
+                }
+            );
+        });
     };
 }
 

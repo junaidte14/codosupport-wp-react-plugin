@@ -177,7 +177,7 @@ class Codosupport {
 		$this->loader->add_filter( 'manage_edit-codosupport_tickets_columns', $plugin_admin, 'codosupport_tickets_columns' );
 		//populate custom columns for tickets post type
 		$this->loader->add_action( 'manage_pages_custom_column', $plugin_admin, 'codosupport_tickets_populate_columns' );
-		//$this->loader->add_action( 'init', $plugin_admin, 'codosupport_ticket_categories', 0 );
+		$this->loader->add_action( 'init', $plugin_admin, 'codosupport_ticket_categories', 0 );
 		//ticket ajax hooks to add new ticket
 		$this->loader->add_action("wp_ajax_codosupport_add_new_ticket", $plugin_admin, "codosupport_add_new_ticket");
 		$this->loader->add_action("wp_ajax_nopriv_codosupport_add_new_ticket", $plugin_admin, "codosupport_add_new_ticket");
@@ -193,19 +193,6 @@ class Codosupport {
 		//ticket ajax hooks to get single ticket by id
 		$this->loader->add_action("wp_ajax_codosupport_get_ticket_by_id", $plugin_admin, "codosupport_get_ticket_by_id");
 		$this->loader->add_action("wp_ajax_nopriv_codosupport_get_ticket_by_id", $plugin_admin, "codosupport_get_ticket_by_id");
-
-
-		//Register products post type 
-		$this->loader->add_action( 'init', $plugin_admin, 'codosupport_register_products_post_type' );
-		//Register products post type meta box 
-		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'codosupport_register_products_meta_boxes' );
-		//save products post type meta box
-		$this->loader->add_action( 'save_post', $plugin_admin, 'codosupport_save_products_meta_boxes', 10, 2 );
-		//custom columns for products post type
-		$this->loader->add_filter( 'manage_edit-codosupport_products_columns', $plugin_admin, 'codosupport_products_columns' );
-		//populate custom columns for products post type
-		$this->loader->add_action( 'manage_posts_custom_column', $plugin_admin, 'codosupport_products_populate_columns' );
-		
 
 	}
 

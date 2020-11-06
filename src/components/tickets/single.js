@@ -93,12 +93,12 @@ const Single = (props) =>{
                                     }
                                     <p className="meta-entry-key">Title:</p>
                                     <p className="meta-entry-value">{myTicket[ 'post_title' ]}</p>
-                                    <p className="meta-entry-key">Product:</p>
-                                    <p className="meta-entry-value">{myTicket[ 'product' ]}</p>
+                                    {/* <p className="meta-entry-key">Product:</p>
+                                    <p className="meta-entry-value">{myTicket[ 'product' ]}</p> */}
                                     <p className="meta-entry-key">Submitted By:</p>
                                     <p className="meta-entry-value">{myTicket['display_name']}</p>
-                                    <p className="meta-entry-key">Assigned To:</p>
-                                    <p className="meta-entry-value">{myTicket['respondent_display_name']}</p>
+                                    {/* <p className="meta-entry-key">Assigned To:</p>
+                                    <p className="meta-entry-value">{myTicket['respondent_display_name']}</p> */}
                                     <p className="meta-entry-key">Date:</p>
                                     <p className="meta-entry-value">{myTicket['post_date']}</p>
                                 </div>

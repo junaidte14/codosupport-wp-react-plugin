@@ -74,9 +74,8 @@ class Codosupport_Admin {
 
 	public function codosupport_menu_page(){
 		add_menu_page( $this->plugin_name, $this->plugin_name, 'manage_options', $this->plugin_name, array($this, 'codosupport_dashboard_page'), 'dashicons-analytics', null );
-		add_submenu_page( $this->plugin_name, 'Products', 'Products', 'manage_options', 'edit.php?post_type=codosupport_products', '', null );
 		add_submenu_page( $this->plugin_name, 'Tickets', 'Tickets', 'manage_options', 'edit.php?post_type=codosupport_tickets', '', null );
-		//add_submenu_page( $this->plugin_name, 'Ticket Categories', 'Categories', 'manage_options', 'edit-tags.php?taxonomy=ticket_categories&post_type=codosupport_tickets', '', null );
+		add_submenu_page( $this->plugin_name, 'Ticket Categories', 'Categories', 'manage_options', 'edit-tags.php?taxonomy=ticket_categories&post_type=codosupport_tickets', '', null );
 	}
 
 	public function codosupport_parent_file(){
@@ -84,8 +83,7 @@ class Codosupport_Admin {
 		global $current_screen, $self;
 		if ( in_array( $current_screen->base, array( 'post', 'edit', 'edit-tags' ) ) && 
 			(
-				'codosupport_tickets' == $current_screen->post_type ||
-				'codosupport_products' == $current_screen->post_type
+				'codosupport_tickets' == $current_screen->post_type
 			) 
 		) {
 			$parent_file = $this->plugin_name;
@@ -132,8 +130,7 @@ class Codosupport_Admin {
 
 	public function codosupport_tickets_columns($columns){
 		unset($columns['date']);
-		$columns['codosupport_ticket_product'] = __('Product', $this->plugin_name);
-		$columns['codosupport_ticket_respondent'] = __('Respondent', $this->plugin_name);
+		//$columns['codosupport_ticket_respondent'] = __('Respondent', $this->plugin_name);
 		$columns['date'] = __('Date', $this->plugin_name);
 		return $columns;
 	}
@@ -141,9 +138,6 @@ class Codosupport_Admin {
 	public function codosupport_tickets_populate_columns($column){
 		$codosupport_ticket_product = intval(get_post_meta( get_the_ID(), 'codosupport_ticket_product', true ));
 		$codosupport_product_respondent = intval(get_post_meta( $codosupport_ticket_product, 'codosupport_product_respondent', true ));
-		if ( 'codosupport_ticket_product' == $column ) {
-			echo ($codosupport_ticket_product != 0) ? get_the_title($codosupport_ticket_product): '';
-		}
 		if ( 'codosupport_ticket_respondent' == $column ) {
 			$respondent = '';
 			$user = get_user_by('ID', $codosupport_product_respondent);
@@ -189,7 +183,7 @@ class Codosupport_Admin {
 		
 		$ticket_type = isset($_REQUEST['type']) ? $_REQUEST['type']: "ticket";
 		$ticket_title = isset($_REQUEST['title']) ? $_REQUEST['title']: "";
-		$ticket_product = isset($_REQUEST['product']) ? $_REQUEST['product']: "";
+		$ticket_category = isset($_REQUEST['category']) ? $_REQUEST['category']: "";
 		$ticket_description = isset($_REQUEST['description']) ? $_REQUEST['description']: "";
 		$ticket_attachments = isset($_REQUEST['attachments']) ? $_REQUEST['attachments']: [];
 		$ticket_parent = isset($_REQUEST['parent']) ? $_REQUEST['parent']: 0;
@@ -224,7 +218,7 @@ class Codosupport_Admin {
 			$headers[] = 'Cc: <'.get_option('admin_email').'>';
 			$multiple_recipients = [];
 			if($ticket_type == 'ticket'){
-				update_post_meta($post_id, 'codosupport_ticket_product', $ticket_product);
+				wp_set_post_terms($post_id, $ticket_category , 'ticket_categories');
 				update_post_meta($post_id, 'codosupport_ticket_user', $ticket_user_id);
 				update_post_meta($post_id, 'codosupport_ticket_attachments', $ticket_attachments);
 
@@ -232,11 +226,6 @@ class Codosupport_Admin {
 				$sender_user = get_user_by('ID', $ticket_submitter);
 				if($sender_user){
 					$multiple_recipients[] = $sender_user->user_email;
-				}
-				$codosupport_product_respondent = intval(get_post_meta( $ticket_product, 'codosupport_product_respondent', true ));
-				$respondent = get_user_by('ID', $codosupport_product_respondent);
-				if($respondent && $codosupport_product_respondent != $ticket_user_id){
-					$multiple_recipients[] = $respondent->user_email;
 				}
 
 				$subject = 'New Support Ticket - '.$ticket_title;
@@ -253,12 +242,6 @@ class Codosupport_Admin {
 				$sender_user = get_user_by('ID', $ticket_submitter);
 				if($sender_user){
 					$multiple_recipients[] = $sender_user->user_email;
-				}
-				$ticket_product = intval(get_post_meta( $ticket_parent, 'codosupport_product_respondent', true ));
-				$codosupport_product_respondent = intval(get_post_meta( $ticket_product, 'codosupport_product_respondent', true ));
-				$respondent = get_user_by('ID', $codosupport_product_respondent);
-				if($respondent && $codosupport_product_respondent != $ticket_user_id){
-					$multiple_recipients[] = $respondent->user_email;
 				}
 
 				$subject = 'Ticket History is Added - '.get_the_title($ticket_parent);
@@ -456,17 +439,11 @@ class Codosupport_Admin {
 				$ticket_user = get_post_meta( $ticket_id, 'codosupport_ticket_user', true );
 				$ticket_user = isset($ticket_user)? intval($ticket_user): 0;
 				$ticket_number = get_post_meta( $ticket_id, 'codosupport_ticket_number', true );
-				$ticket_product = intval(get_post_meta( $ticket_id, 'codosupport_ticket_product', true ));
-				$ticket_product_title = get_the_title($ticket_product);
-				$ticket_respondent = get_post_meta( $ticket_product, 'codosupport_product_respondent', true );
-				$respondent_data = get_user_by('ID', $ticket_respondent);
-				$ticket['respondent_display_name'] = $respondent_data->display_name;
 
 				$user = get_user_by('ID', $ticket_user);
 				$ticket['display_name'] = $user->display_name;
 				$ticket['attachments'] = $ticket_attachments;
 				$ticket['number'] = $ticket_number;
-				$ticket['product'] = $ticket_product_title;
 			}else{
 				$ticket = null;
 			}
@@ -564,64 +541,6 @@ class Codosupport_Admin {
 			header("Location: ".$_SERVER["HTTP_REFERER"]);
 		}
 		die();
-	}
-
-	//helper functions for products post type
-	public function codosupport_register_products_post_type(){
-		require_once(plugin_dir_path( __FILE__ ).'post_types/products/register-post-type.php');
-	}
-
-	public function codosupport_register_products_meta_boxes(){
-		add_meta_box(
-            'codosupport-products-metaboxes',
-            __('Product Options', $this->plugin_name),
-            [$this, 'codosupport_display_products_meta_boxes'],
-            'codosupport_products'
-        );
-	}
-
-	public function codosupport_display_products_meta_boxes($codosupport_products){
-		if ( function_exists('wp_nonce_field') ){
-			wp_nonce_field( basename( __FILE__ ), 'codosupport_products_metaboxes');
-		}		
-		require_once(plugin_dir_path( __FILE__ ).'post_types/products/display-meta-boxes.php');
-	}
-
-	public function codosupport_save_products_meta_boxes($codosupport_products_id, $codosupport_products){
-		// Checks save status
-		$is_autosave = wp_is_post_autosave( $codosupport_products_id );
-		$is_revision = wp_is_post_revision( $codosupport_products_id );
-		$is_valid_nonce = ( isset( $_POST[ 'codosupport_products_metaboxes' ] ) && wp_verify_nonce( $_POST[ 'codosupport_products_metaboxes' ], basename( __FILE__ ) ) ) ? 'true' : 'false';
-		// Exits script depending on save status
-		if ( $is_autosave || $is_revision || !$is_valid_nonce ) {
-			return;
-		}
-		require_once(plugin_dir_path( __FILE__ ).'post_types/products/save-meta-boxes.php');
-	}
-
-	public function codosupport_products_columns($columns){
-		unset($columns['date']);
-		$columns['codosupport_product_price'] = __('Price', $this->plugin_name);
-		$columns['codosupport_product_respondent'] = __('Respondent', $this->plugin_name);
-		$columns['date'] = __('Date', $this->plugin_name);
-		return $columns;
-	}
-
-	public function codosupport_products_populate_columns($column){
-		if ( 'codosupport_product_price' == $column ) {
-			$codosupport_product_price = intval(get_post_meta( get_the_ID(), 'codosupport_product_price', true ));
-			echo $codosupport_product_price;
-		}
-
-		if ( 'codosupport_product_respondent' == $column ) {
-			$codosupport_product_respondent = intval(get_post_meta( get_the_ID(), 'codosupport_product_respondent', true ));
-			$user = get_user_by('ID', $codosupport_product_respondent);
-			if($user){
-				$codosupport_product_respondent = $user->display_name;
-			}
-			echo $codosupport_product_respondent;
-		}
-
 	}
 
 }

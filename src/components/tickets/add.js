@@ -6,9 +6,11 @@ import Spinner from '../spinner';
 const AddForm = (props) =>{
     const {type, parent, setSelectedItem, setTicketView, setHistoryView} = props;
     const dispatch = useDispatch();
+    console.log(codosupport_data);
 
     const [title, setTitle] = useState('');
-    const [product, setProduct] = useState('');
+    //const [product, setProduct] = useState('');
+    const [category, setCategory] = useState('');
     const [description, setDescription] = useState('');
     const [attachments, setAttachments] = useState([]);
     const [submitted, setSubmitted] = useState(false);
@@ -22,8 +24,11 @@ const AddForm = (props) =>{
             case 'title':
                 setTitle(value);
                 break;
-            case 'product':
+            /* case 'product':
                 setProduct(value);
+                break; */
+            case 'category':
+                setCategory(value);
                 break;
             case 'description':
                 setDescription(value);
@@ -75,7 +80,8 @@ const AddForm = (props) =>{
         setSubmitted(true);
         let tempItem = {
             title: title,
-            product: product,
+            //product: product,
+            category: category,
             description: description,
             attachments: attachments,
             parent: parent,
@@ -87,7 +93,8 @@ const AddForm = (props) =>{
                 if(res.type && res.type == 'success'){
                     setTitle('');
                     setDescription('');
-                    setProduct('');
+                    //setProduct('');
+                    setCategory('');
                     setAttachments([]);
                     if(type == 'ticket'){
                         setSelectedItem(res.post_id);
@@ -118,12 +125,27 @@ const AddForm = (props) =>{
                             <div className="codo-error">Title is required</div>
                         }
                     </div>
-                    <div className="codo-form-field-wrapper">
+                    {/* <div className="codo-form-field-wrapper">
                         <select value={product} name="product" className="codo-form-field codo-full-width" onChange={handleChange}> 
                             <option value="">All Products</option>
                             {codosupport_data.products &&
                                 codosupport_data.products.map(item => {
                                 return (<option value={item['ID']} key={item.ID}>{item[ 'post_title' ]}</option>)
+                                })
+                            }
+                        </select>
+                    </div> */}
+                    <div className="codo-form-field-wrapper">
+                        <select value={category} name="category" className="codo-form-field codo-full-width" onChange={handleChange}> 
+                            <option value="">Select Category</option>
+                            {codosupport_data.support_categories && codosupport_data.support_categories.length !== 0 &&
+                                Object.keys(codosupport_data.support_categories).map((item) => {
+                                    return (
+                                    <option 
+                                        value={codosupport_data.support_categories[item].term_id} 
+                                        key={codosupport_data.support_categories[item].term_id}>
+                                        {codosupport_data.support_categories[item].name}
+                                    </option>)
                                 })
                             }
                         </select>

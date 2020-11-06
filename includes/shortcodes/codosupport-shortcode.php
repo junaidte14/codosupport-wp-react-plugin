@@ -65,10 +65,13 @@ function codosupport_shortcode($atts) {
 
     $selected_ticket = isset($_GET['ticket_id']) ? $_GET['ticket_id']: null;
 
+    $support_categories = codosupport_get_taxonomy_hierarchy('ticket_categories');
+
     wp_localize_script( 'codosupport-react-app', 'codosupport_data', array( 
         'ajaxurl' => admin_url( 'admin-ajax.php' ),
         'nonce' => $nonce,
-        'products' => $codosupport_products,
+        //'products' => $codosupport_products,
+        'support_categories' => $support_categories,
         'selected_ticket' => $selected_ticket,
         'user_id'  => $user_id,
         'login_url' => $login_url,
